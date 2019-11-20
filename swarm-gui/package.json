@@ -1,0 +1,29 @@
+{
+  "name": "swarm-gui",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PewhProgrammer/FedSwarm.git"
+  },
+  "keywords": [
+    "ai",
+    "swarm",
+    "robotics"
+  ],
+  "author": "Thinh Tran",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PewhProgrammer/FedSwarm/issues"
+  },
+  "homepage": "https://github.com/PewhProgrammer/FedSwarm#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "p5": "^0.10.2",
+    "socket.io": "^2.3.0"
+  }
+}

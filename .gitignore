@@ -1,37 +1,27 @@
 # Editor directories and files
-.idea
-.vscode
-.vs
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+**/.idea
+**/.vscode
+**/.vs
+**/*.suo
+**/*.ntvs*
+**/*.njsproj
+**/*.sln
+**/*.sw?
 
 ##### Frontend ######
-node_modules/
+**/node_modules/
 
 # Optional npm cache directory
-.npm
+**/.npm
 
 # Logs
-logs
-*.log
-npm-debug.log*
+**/logs
+**/*.log
+**/npm-debug.log*
 
 ##### Backend ######
 
-### C-sharp ###
-
-# Build results
-[Dd]ebug/
-[Rr]elease/
-x64/
-[Bb]in/
-[Oo]bj/
-out/
-
-
 ### Python ###
 
-__pycache__/
+**/__pycache__/
+**/env
