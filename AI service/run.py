@@ -1,77 +1,52 @@
-#import os
-#import tensorflow as tf
-from flask import Flask, render_template
-from flask_socketio import SocketIO, emit
-import json
-import time
-import random
+"""Startup module
+"""
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
-app.debug = False
-socketio = SocketIO(app, cors_allowed_origins="*")
+import sys
+import argparse
+from routes import init_flask_app
+from logic.predictor import init_predictor, run_prediction
 
-class Board(object):
-    width = 0
-    height = 0
-    units = []
 
-    # The class "constructor" - It's actually an initializer 
-    def __init__(self, width, height, robots):
-        self.width = width
-        self.height = height
-        self.units = robots
+def main(args):
+    print(args)
+    init_predictor(800, 600, 1)
+    sio_context = init_flask_app()
+    run_prediction(sio_context)
 
-class Robot(object):
-    posX = 0
-    posY = 0
-    diam = 0
-    speed = 0
 
-    # The class "constructor" - It's actually an initializer 
-    def __init__(self, x, y, diameter, speed):
-        self.posX = x
-        self.posY = y
-        self.diam = diameter
-        self.speed = speed
+def parse_arguments(argv):
+    # parser = argparse.ArgumentParser()
 
-def make_robot(x, y, diameter, speed):
-    return Robot(x, y, diameter, speed)
+    # parser.add_argument('mode', type=str, choices=['TRAIN', 'CLASSIFY'],
+    #     help='Indicates if a new classifier should be trained or a classification ' + 
+    #     'model should be used for classification', default='CLASSIFY')
+    # parser.add_argument('data_dir', type=str,
+    #     help='Path to the data directory containing aligned LFW face patches.')
+    # parser.add_argument('model', type=str, 
+    #     help='Could be either a directory containing the meta_file and ckpt_file or a model protobuf (.pb) file')
+    # parser.add_argument('classifier_filename', 
+    #     help='Classifier model file name as a pickle (.pkl) file. ' + 
+    #     'For training this is the output and for classification this is an input.')
+    # parser.add_argument('--use_split_dataset', 
+    #     help='Indicates that the dataset specified by data_dir should be split into a training and test set. ' +  
+    #     'Otherwise a separate test set can be specified using the test_data_dir option.', action='store_true')
+    # parser.add_argument('--test_data_dir', type=str,
+    #     help='Path to the test data directory containing aligned images used for testing.')
+    # parser.add_argument('--batch_size', type=int,
+    #     help='Number of images to process in a batch.', default=90)
+    # parser.add_argument('--image_size', type=int,
+    #     help='Image size (height, width) in pixels.', default=160)
+    # parser.add_argument('--seed', type=int,
+    #     help='Random seed.', default=666)
+    # parser.add_argument('--min_nrof_images_per_class', type=int,
+    #     help='Only include classes with at least this number of images in the dataset', default=20)
+    # parser.add_argument('--nrof_train_images_per_class', type=int,
+    #     help='Use this number of images from each class for training and the rest for testing', default=10)
 
-def move_robot(board):
-    for x in board.units:
-        x.posX += random.randint(-1,1)
-        x.posY += random.randint(-1,1)
-    return board
+    # return parser.parse_args(argv)
 
-def make_board(width, height, count):
-    robots = []
-    for x in range(count):
-        robot = make_robot(width*random.uniform(0.0,1.0)
-        ,height*random.uniform(0.0,1.0),20,1)
-        robots.append(robot)
-        
-    return Board(width, height, robots)
+    return argv
 
-board = make_board(800, 600, 10)
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@socketio.on('reply')
-def test_message(message):
-    global board
-    if message == 'init':
-        emit('init', json.dumps(board, default=lambda o: o.__dict__), separators=(',', ':'))
-    else:
-        while True:
-            board = move_robot(board)
-            emit('event', json.dumps(board.units,default=lambda o: o.__dict__, separators=(',', ':')))
-            time.sleep(0.02)
 
 if __name__ == '__main__':
-    socketio.run(app, port = 5000)
-
-#os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-#print(tf.reduce_sum(tf.random.normal([1000, 1000])))
+    main(parse_arguments(sys.argv[1:]))

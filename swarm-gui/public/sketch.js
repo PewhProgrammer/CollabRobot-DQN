@@ -24,13 +24,15 @@ function setup() {
     console.log("board: " + JSON.stringify(board))
     window_x = board.width
     window_y = board.height
-    for (i = 0; i < board.units.length; i++) {
-      sentRobot = board.units[i]
-      robo = new Robot(sentRobot.posX, sentRobot.posY,
-        sentRobot.diam, sentRobot.speed)
-      robots.push(robo)
+    agents = board.units
+    for (var key in agents) {
+      if (agents.hasOwnProperty(key)) {
+          sentRobot = agents[key]
+          robot = new Robot(sentRobot.posX, sentRobot.posY,
+            sentRobot.diam, sentRobot.speed)
+          robots.push(robot)
+      }
     }
-
 
     // Creating canvas
     const cv = createCanvas(window_x, window_y)
@@ -43,8 +45,10 @@ function setup() {
 
   // #command is equal to #robots
   socket.on('event', commandJSON => {
+    if (!run) return
     try {
       requestLock()
+      // console.log("Command: "+ commandJSON )
       command = JSON.parse(commandJSON)
       job_queue.push(command)
       console.log("Queue length: "+job_queue.length)
@@ -88,12 +92,15 @@ function draw() {
   if (typeof robots == 'undefined' || robots.length == 0) 
     return
 
-  let command = job_queue.shift();
-  if (typeof command !== 'undefined' && command.length > 0) { // queue is now [5]
-    for (i = 0; i < command.length; i++) {
-      data = command[i]
-      robots[i].move(data.posX, data.posY);
-      robots[i].display();
+  const command = job_queue.shift();
+  if (typeof command !== 'undefined') { 
+
+    for (var id in command) {
+      if (command.hasOwnProperty(id)) {
+        data = command[id]
+        robots[id].move(data.posX, data.posY);
+        robots[id].display();
+      }
     }
   } else {
     for (i = 0; i < robots.length; i++) {
