@@ -26,11 +26,13 @@ class Robot(object):
     speed = 0
     height = 0
     width = 0
+    target = 0
+    carrier = False
 
     # The class "constructor" - It's actually an initializer 
-    def __init__(self, width, height, diameter, speed):
-        self.posX = width * random.uniform(0.0, 1.0)
-        self.posY = height * random.uniform(0.0, 1.0)
+    def __init__(self, posX, posY, width, height, diameter, speed):
+        self.posX = posX
+        self.posY = posY
         self.diam = diameter
         self.speed = speed
         self.width = width
@@ -86,7 +88,16 @@ class Robot(object):
 
     def move(self, num):
         self.options[num](self)
-        return
+        return self.get_position()
+
+    def get_position(self):
+        return self.posX, self.posY
+
+    def set_carrier(self, value):
+        self.carrier = value
+
+    def get_carrier(self):
+        return self.carrier
 
 
 def get_sample_movement():

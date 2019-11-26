@@ -8,10 +8,38 @@ from logic.predictor import init_predictor, run_prediction
 
 
 def main(args):
-    print(args)
-    init_predictor(800, 600, 1)
+    # print(args)
+    # default()
+    pickup_example()
     sio_context = init_flask_app()
     run_prediction(sio_context)
+    sio_context.sleep(5)
+
+
+def pickup_example():
+    config = {
+        "id": 1,
+        "width": 10,
+        "height": 10,
+        "agents": 1,
+        "agentPosX": 5,
+        "agentPosY": 5,
+        "pickupX": 2,
+        "pickupY": 5,
+        "dropoffX": 8,
+        "dropoffY": 5
+    }
+    init_predictor(config)
+
+
+def default():
+    config = {
+        "id": 0,
+        "width": 20,
+        "height": 20,
+        "agents": 1
+    }
+    init_predictor(config)
 
 
 def parse_arguments(argv):
