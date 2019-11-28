@@ -10,12 +10,11 @@ def update_env_encode(board):
     :param board:
     :return: JSON object
     """
-    pX, pY = board.map.decode(board.pickup)
-    dX, dY = board.map.decode(board.dropoff)
+
     x = {
-        "agents": board.units,
-        "pickupX": pX,
-        "pickupY": pY
+        "agents": {0:board.robot},
+        "pickupX": board.pickup[0].item(),
+        "pickupY": board.pickup[1].item()
     }
 
     return json.dumps(x, default=lambda o: o.__dict__, separators=(',', ':'))
@@ -26,16 +25,14 @@ def new_env_encode(board):
         :param board:
         :return: JSON object
         """
-    pX, pY = board.map.decode(board.pickup)
-    dX, dY = board.map.decode(board.dropoff)
     x = {
         "width": board.width,
         "height": board.height,
-        "pickupX": pX,
-        "pickupY": pY,
-        "dropoffX": dX,
-        "dropoffY": dY,
-        "agents": board.units
+        "pickupX": board.pickup[0].item(),
+        "pickupY": board.pickup[1].item(),
+        "dropoffX": board.dropoff[0].item(),
+        "dropoffY": board.dropoff[1].item(),
+        "agents": {0:board.robot}
     }
 
     return json.dumps(x, default=lambda o: o.__dict__, separators=(',', ':'))

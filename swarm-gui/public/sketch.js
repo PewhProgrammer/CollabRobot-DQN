@@ -86,6 +86,7 @@ function setup() {
 
   // Adding a mousePressed listener to the button
   color_btn.mousePressed(() => {
+    console.log("send reply")
     socket.emit("reply", "init");
   });
 }

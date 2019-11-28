@@ -42,5 +42,4 @@ def start_server():
 
 def init_flask_app():
     socketio.start_background_task(start_server)
-    # socketio.sleep(5)
     return socketio

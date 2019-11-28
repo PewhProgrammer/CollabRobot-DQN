@@ -5,6 +5,7 @@
 
 import math
 import random
+import numpy as np
 
 from common.robot import Robot, Movement, get_sample_movement
 from common.robot_factory import make_robot
@@ -13,30 +14,32 @@ from logic.requirements import Requirements
 
 
 class Environment(object):
-    width = 0
-    height = 0
-    units = {}
-    pickup = 0
-    dropoff = 0
-    map = None
-    requirements = None
 
-    # The class "constructor" - It's actually an initializer 
-    def __init__(self, width, height, robots, pickupX, pickupY, dropoffX, dropoffY):
-        self.width = width
-        self.height = height
-        self.units = robots
-        self.map = Map(width, height)
+    # The class "constructor" - It's actually an initializer
+    def __init__(self, size, config=None):
+        self.width = size[0]
+        self.height = size[1]
+        self.size = size
+        self.map = Map(self.width, self.height)
+
+        if config is None:
+            agent_posX, agent_posY, pickupX, pickupY, dropoffX, dropoffY = -1, -1, -1, -1, -1, -1
+        else:
+            agent_posX, agent_posY, pickupX, pickupY, dropoffX, dropoffY = [config["agentPosX"], config["agentPosY"],
+                                                                            config["pickupX"], config["pickupY"],
+                                                                            config["dropoffX"], config["dropoffY"]]
+
+        self.robot = make_robot(agent_posX, agent_posY, width=size[0], height=size[1], distributed=(agent_posX == -1))
         self.generate_objective(pickupX, pickupY, dropoffX, dropoffY)
         self.requirements = Requirements(self.pickup, self.dropoff)
 
     def generate_objective(self, pickupX=-1, pickupY=-1, dropoffX=-1, dropoffY=-1):
         # create new pickup and dropoff point
         x, y = self.generate_point(pickupX, pickupY)
-        self.pickup = self.map.encode(x, y)
+        self.pickup = np.array([x, y])
 
         x, y = self.generate_point(dropoffX, dropoffY)
-        self.dropoff = self.map.encode(x, y)
+        self.dropoff = np.array([x, y])
 
     def generate_point(self, x, y):
         if x == -1:
@@ -45,6 +48,22 @@ class Environment(object):
             y = math.floor((self.height - 1) * random.uniform(0.0, 1.0))
 
         return x, y
+
+    def move_robot(self, action):
+        self.robot.move(action)
+
+    def robot_position(self) -> np.array:
+        r = self.robot.get_position()
+        return np.array([r[0], r[1]])
+
+    def pickup_position(self) -> np.array:
+        return self.pickup
+
+    def dropoff_position(self) -> np.array:
+        return self.dropoff
+
+    def reset_robot(self):
+        self.robot.reset()
 
 
 env = None
@@ -89,11 +108,6 @@ def calc_state():
     return env.map.encode(pos_x, pos_y)
 
 
-def env_reset():
-    make_env(env.width, env.height, config=cfg)
-    return env
-
-
 def get_movement(movementID, rID):
     return {rID: Movement(movementID)}
 
@@ -104,23 +118,10 @@ def update_map(agent, robotID):
     env.map.set_map(x, y, robotID)
 
 
-def make_env(width, height, count=1, config=None):
-    global env, cfg
-    robots = {}
-    cfg = config
-
-    if config is None:
-        agent_posX, agent_posY, pickupX, pickupY, dropoffX, dropoffY = -1, -1, -1, -1, -1, -1
-    else:
-        agent_posX, agent_posY, pickupX, pickupY, dropoffX, dropoffY = [config["agentPosX"], config["agentPosY"],
-                                                                        config["pickupX"], config["pickupY"],
-                                                                        config["dropoffX"], config["dropoffY"]]
-
-    for x in range(count):
-        robot = make_robot(agent_posX, agent_posY, width=width, height=height, distributed=(agent_posX == -1))
-        robots[x] = robot
-
-    env = Environment(width, height, robots, pickupX, pickupY, dropoffX, dropoffY)
+def make_env(size):
+    global env
+    env = Environment(size=size)
+    return env
 
 
 def get_env():

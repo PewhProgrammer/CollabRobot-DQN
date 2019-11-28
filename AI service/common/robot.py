@@ -5,6 +5,7 @@
 
 import random
 from enum import Enum
+import numpy as np
 
 
 class Movement(Enum):
@@ -86,8 +87,12 @@ class Robot(object):
         Movement.SOUTH_EAST: south_east
     }
 
-    def move(self, num):
-        self.options[num](self)
+    def move(self, action):
+        if isinstance(action, Movement):
+            self.options[action](self)
+        else:
+            self.options[Movement(action)](self)
+
         return self.get_position()
 
     def get_position(self):
@@ -98,6 +103,10 @@ class Robot(object):
 
     def get_carrier(self):
         return self.carrier
+
+    def reset(self):
+        self.posX = random.randint(0, self.width)
+        self.posY = random.randint(0, self.height)
 
 
 def get_sample_movement():

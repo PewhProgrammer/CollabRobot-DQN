@@ -3,74 +3,62 @@
 
 import random
 # import tensorflow as tf
-import common.environment as env
+from common.env_wrapper import EnvWrapper
 from routes import render_env
 import numpy as np
+from data.DQN import DQN
+from common.environment import get_env
 
-q_table = None
+envWrap = None
 
-# Hyperparameters
-alpha = 0.1
-gamma = 0.6
-epsilon = 0.1
+
 
 
 def init_predictor(config):
-    width, height, size = config["width"], config["height"], config["agents"]
-    if config["id"] == 1:
-        width, height, size = config["width"], config["height"], config["agents"]
-        env.make_env(width, height, size, config)
-    else:
-        env.make_env(width, height, size)
-    global q_table
-    q_table = np.zeros([width * height, 9])
+    global envWrap
+    envWrap = EnvWrapper(config)
 
 
 def run_prediction(sio):
-    total_epochs, total_penalties = 0, 0
-    episodes = 100
-    epochs = 0
+    env = envWrap
+    gamma = 0.9
+    epsilon = .95
 
-    for x in range(episodes):
-        env.env_reset()
-        state = env.calc_state()
-        epochs, penalties, reward, = 0, 0, 0
-        done = False
-        while not done:
-            if random.uniform(0, 1) < epsilon:
-                action = env.action_space_sample()  # Explore action space
-            else:
-                movementID = np.argmax(q_table[state])
-                action = env.get_movement(movementID, 0)  # Exploit learned values
+    trials = 1000
+    trial_len = 500
 
-            next_state, reward, done, board = env.step(action)
-            # print(action[0])
-            actionID = action[0].value
+    # updateTargetNetwork = 1000
+    dqn_agent = DQN(env=env)
+    steps = []
+    for trial in range(trials):
+        cur_state = env.reset().reshape(1, 2)
+        for step in range(trial_len):
+            action = dqn_agent.act(cur_state)
+            new_state, reward, done, _ = env.step(action)
 
-            old_value = q_table[state, actionID]
-            next_max = np.max(q_table[next_state])
+            # reward = reward if not done else -20
+            new_state = new_state.reshape(1, 2)
+            dqn_agent.remember(cur_state, action, reward, new_state, done)
 
-            new_value = (1 - alpha) * old_value + alpha * (reward + gamma * next_max)
-            q_table[state, actionID] = new_value
+            dqn_agent.replay()  # internally iterates default (prediction) model
+            dqn_agent.target_train()  # iterates target model
 
-            if reward < -10:
-                penalties += 1
+            #
+            render_env(env.render_state())
+            sio.sleep(0.01)
 
-            state = next_state
-            epochs += 1
+            cur_state = new_state
+            if done:
+                break
+        if step >= 199:
+            print("Failed to complete in trial {}".format(trial))
+            if step % 10 == 0:
+                dqn_agent.save_model("trial-{}.model".format(trial))
+        else:
+            print("Completed in {} trials".format(trial))
+            dqn_agent.save_model("success.model")
+            break
 
-            if x == 99:
-                sio.sleep(0.2)
-                render_env(board)
-
-        total_penalties += penalties
-        total_epochs += epochs
-
-    print(f"Results after {episodes} episodes:")
-    print(f"Average timesteps per episode: {total_epochs / episodes}")
-    print(f"Average penalties per episode: {total_penalties / episodes}")
-
-    print(f"Current timesteps in test episode: {epochs}")
 
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # print(tf.reduce_sum(tf.random.normal([1000, 1000])))
