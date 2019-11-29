@@ -16,14 +16,18 @@ from logic.requirements import Requirements
 class Environment(object):
 
     # The class "constructor" - It's actually an initializer
-    def __init__(self, size, config=None):
-        self.width = size[0]
-        self.height = size[1]
-        self.size = size
-        self.map = Map(self.width, self.height)
-        self.config = config
+    def __init__(self, config=None):
+        if config is not None:
+            self.config = config
+        else:
+            raise AttributeError(f'{self.__class__.__name__}.{config} config not given.')
 
-        self.robot = make_robot(width=size[0], height=size[1])
+        self.width = self.config["width"]
+        self.height = self.config["height"]
+        self.size = (self.width, self.height)
+        self.map = Map(self.width, self.height)
+
+        self.robot = make_robot(width=self.width, height=self.height)
         self.generate_objective()
         self.requirements = Requirements(self.pickup, self.dropoff)
 
@@ -119,9 +123,9 @@ def update_map(agent, robotID):
     env.map.set_map(x, y, robotID)
 
 
-def make_env(size, config=None):
+def make_env(config=None):
     global env
-    env = Environment(size=size, config=config)
+    env = Environment(config=config)
     return env
 
 

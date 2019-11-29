@@ -23,7 +23,7 @@ class Requirements(object):
 
         env.pickup = agentPos  # set pickup to agents position
 
-        if reward == 1:  # just picked up the pickup
+        if reward >= 1:  # just picked up the pickup
             return reward, carrying, False
 
         reward, done = self.check_dropoff(agentPos)
@@ -35,15 +35,15 @@ class Requirements(object):
 
         if np.array_equal(self.pickup, agentPos):
             agent.set_carrier(True)
-            return 1, True
+            return 10, True
 
         return 0, False
 
     def check_dropoff(self, agentPos):
         if np.array_equal(self.dropoff, agentPos):
-            return 1, True
+            return 10, True
 
         return 0, False
 
     def punish(self, env_size):  # doesnt have the carrier, check if on dropoff zones
-        return -0.1 / (env_size[0] * env_size[1])
+        return -1  # / (env_size[0] * env_size[1])

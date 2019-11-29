@@ -16,7 +16,7 @@ class EnvWrapper(gym.Env):
     def __init__(self, config=None):
         self.viewer = None
 
-        self.env = make_env(size=(10,10), config=config)
+        self.env = make_env(config=config)
         # raise AttributeError("One must supply either a maze_file path (str) or the maze_size (tuple of length 2)")
 
         self.env_size = self.env.size

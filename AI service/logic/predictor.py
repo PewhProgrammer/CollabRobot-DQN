@@ -48,7 +48,7 @@ def run_prediction(sio):
             elapsed_time = time.time() - start_time
             if elapsed_time > timeline:
                 timeline += 5
-                print("{} actions per 5 seconds".format(move))
+                # print("{} actions per 5 seconds".format(move))
                 move = 0
 
             move += 1
@@ -58,10 +58,10 @@ def run_prediction(sio):
                 break
         if step >= 199:
             print("Failed to complete in trial {}".format(trial))
-            if step % 10 == 0:
-                dqn_agent.save_model("trial-{}.model".format(trial))
+            # if step % 10 == 0:
+                # dqn_agent.save_model("trial-{}.model".format(trial))
         else:
-            print("Completed in {} trials".format(trial))
+            print("Completed in {} trial with {} steps".format(trial, step))
             # dqn_agent.save_model("success.model")
             # break
 
