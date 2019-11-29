@@ -21,33 +21,31 @@ class Environment(object):
         self.height = size[1]
         self.size = size
         self.map = Map(self.width, self.height)
+        self.config = config
 
-        if config is None:
-            agent_posX, agent_posY, pickupX, pickupY, dropoffX, dropoffY = -1, -1, -1, -1, -1, -1
-        else:
-            agent_posX, agent_posY, pickupX, pickupY, dropoffX, dropoffY = [config["agentPosX"], config["agentPosY"],
-                                                                            config["pickupX"], config["pickupY"],
-                                                                            config["dropoffX"], config["dropoffY"]]
-
-        self.robot = make_robot(agent_posX, agent_posY, width=size[0], height=size[1], distributed=(agent_posX == -1))
-        self.generate_objective(pickupX, pickupY, dropoffX, dropoffY)
+        self.robot = make_robot(width=size[0], height=size[1])
+        self.generate_objective()
         self.requirements = Requirements(self.pickup, self.dropoff)
 
-    def generate_objective(self, pickupX=-1, pickupY=-1, dropoffX=-1, dropoffY=-1):
+    def generate_objective(self):
+        if self.config is None:
+            pickupX, pickupY, dropoffX, dropoffY = -1, -1, -1, -1
+        else:
+            pickupX, pickupY, dropoffX, dropoffY = [self.config["pickupX"], self.config["pickupY"],
+                                                    self.config["dropoffX"], self.config["dropoffY"]]
+
         # create new pickup and dropoff point
-        x, y = self.generate_point(pickupX, pickupY)
-        self.pickup = np.array([x, y])
+        self.pickup = self.generate_point(pickupX, pickupY)
+        self.dropoff = self.generate_point(dropoffX, dropoffY)
 
-        x, y = self.generate_point(dropoffX, dropoffY)
-        self.dropoff = np.array([x, y])
+    def generate_point(self, x, y) -> np.array:
 
-    def generate_point(self, x, y):
         if x == -1:
             x = math.floor((self.width - 1) * random.uniform(0.0, 1.0))
         if y == -1:
             y = math.floor((self.height - 1) * random.uniform(0.0, 1.0))
 
-        return x, y
+        return np.array([x, y])
 
     def move_robot(self, action):
         self.robot.move(action)
@@ -64,6 +62,9 @@ class Environment(object):
 
     def reset_robot(self):
         self.robot.reset()
+
+    def reset_objectives(self):
+        self.generate_objective()
 
 
 env = None
@@ -118,9 +119,9 @@ def update_map(agent, robotID):
     env.map.set_map(x, y, robotID)
 
 
-def make_env(size):
+def make_env(size, config=None):
     global env
-    env = Environment(size=size)
+    env = Environment(size=size, config=config)
     return env
 
 

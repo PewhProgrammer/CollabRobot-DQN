@@ -16,7 +16,7 @@ class EnvWrapper(gym.Env):
     def __init__(self, config=None):
         self.viewer = None
 
-        self.env = make_env(size=(10,10))
+        self.env = make_env(size=(10,10), config=config)
         # raise AttributeError("One must supply either a maze_file path (str) or the maze_size (tuple of length 2)")
 
         self.env_size = self.env.size
@@ -47,16 +47,9 @@ class EnvWrapper(gym.Env):
 
     def step(self, action):
         self.env.move_robot(action)
-        # reward, done = self.env.requirements.validate(agent, map, env)  # check if pickup and dropoff is successfull
+        reward, carrying, done = self.env.requirements.validate(self.env)  # check if pickup and dropoff is successfull
 
-        if np.array_equal(self.env.robot_position(), self.env.dropoff_position()):
-            reward = 1
-            done = True
-        else:
-            reward = -0.1 / (self.env_size[0] * self.env_size[1])
-            done = False
-
-        self.state = self.env.robot_position()
+        self.state = np.append(self.env.robot_position(), carrying)
 
         info = {}
 
@@ -64,10 +57,11 @@ class EnvWrapper(gym.Env):
 
     def reset(self):
         self.env.reset_robot()
+        self.env.reset_objectives()
         self.state = np.zeros(2)
         self.steps_beyond_done = None
         self.done = False
-        return self.state
+        return np.append(self.env.robot.get_position(), 0)
 
     def render_state(self):
         return self.env

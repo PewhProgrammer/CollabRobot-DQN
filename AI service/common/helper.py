@@ -2,7 +2,6 @@
 """
 
 import json
-import common.map
 
 
 def update_env_encode(board):
@@ -12,7 +11,7 @@ def update_env_encode(board):
     """
 
     x = {
-        "agents": {0:board.robot},
+        "agents": {0: board.robot},
         "pickupX": board.pickup[0].item(),
         "pickupY": board.pickup[1].item()
     }
@@ -32,9 +31,7 @@ def new_env_encode(board):
         "pickupY": board.pickup[1].item(),
         "dropoffX": board.dropoff[0].item(),
         "dropoffY": board.dropoff[1].item(),
-        "agents": {0:board.robot}
+        "agents": {0: board.robot}
     }
 
     return json.dumps(x, default=lambda o: o.__dict__, separators=(',', ':'))
-
-

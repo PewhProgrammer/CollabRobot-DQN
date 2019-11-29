@@ -19,14 +19,15 @@ class DQN(object):
         self.epsilon_decay = 0.995
         self.learning_rate = 0.01
         self.tau = .05
-        self.model = self.create_model()
+
         # "hack" implemented by DeepMind to improve convergence
+        self.model = self.create_model()
         self.target_model = self.create_model()
 
     def create_model(self):
         model = Sequential()
         state_shape = self.env.observation_space.shape
-        model.add(Dense(24, input_dim=2,
+        model.add(Dense(24, input_dim=3,
                         activation="relu"))
         model.add(Dense(48, activation="relu"))
         model.add(Dense(24, activation="relu"))

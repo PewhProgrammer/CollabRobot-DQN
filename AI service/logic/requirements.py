@@ -1,6 +1,8 @@
 """Object class for target/goal requirements
 """
 
+import numpy as np
+
 
 class Requirements(object):
     pickup = 0
@@ -11,39 +13,37 @@ class Requirements(object):
         self.pickup = pickup
         self.dropoff = dropoff
 
-    def validate(self, agent, map, env):
-        reward, carrying = self.check_carrier(agent, map)  # done if pickup is reached
+    def validate(self, env):
+
+        agent = env.robot
+        agentPos = np.asarray(agent.get_position())
+        reward, carrying = self.check_carrier(agent, agentPos)  # done if pickup is reached
         if not carrying:
-            return reward + self.punish(agent, map), carrying
+            return self.punish(env.size), carrying, False  # not done yet
 
-        x, y = agent.get_position()
-        env.pickup = map.encode(x, y)  # set pickup to agents position
+        env.pickup = agentPos  # set pickup to agents position
 
-        reward2, done = self.check_dropoff(agent, map)
-        return reward + reward2, done  # done if pickup is on dropoff
+        if reward == 1:  # just picked up the pickup
+            return reward, carrying, False
 
-    def check_carrier(self, agent, map):
+        reward, done = self.check_dropoff(agentPos)
+        return reward + self.punish(env.size), carrying, done  # done if pickup is on dropoff
+
+    def check_carrier(self, agent, agentPos):
         if agent.get_carrier():  # check if agent has carrier
             return 0, True
 
-        agent_x, agent_y = agent.get_position()
-        if self.pickup == map.encode(agent_x, agent_y):
+        if np.array_equal(self.pickup, agentPos):
             agent.set_carrier(True)
-            return 3, True
+            return 1, True
 
         return 0, False
 
-    def check_dropoff(self, agent, map):
-        agent_x, agent_y = agent.get_position()
-        if self.dropoff == map.encode(agent_x, agent_y):
-            return 20, True
+    def check_dropoff(self, agentPos):
+        if np.array_equal(self.dropoff, agentPos):
+            return 1, True
 
-        return -1, False
+        return 0, False
 
-    def punish(self, agent, map):  # doesnt have the carrier, check if on dropoff zone
-        agent_x, agent_y = agent.get_position()
-        if self.dropoff == map.encode(agent_x, agent_y):
-            return -1
-
-        return -1
-
+    def punish(self, env_size):  # doesnt have the carrier, check if on dropoff zones
+        return -0.1 / (env_size[0] * env_size[1])

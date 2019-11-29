@@ -6,10 +6,10 @@ let pickup;
 let dropoff;
 let socket;
 
-const canvas_width = 800
-const canvas_height = 600
-let map_width
-let map_height
+const canvas_width = 800;
+const canvas_height = 600;
+let map_width;
+let map_height;
 
 let lock = false;
 let run = false;
@@ -31,8 +31,8 @@ function setup() {
     map_height = board.height;
     agents = board.agents;
 
-    adjustedX = canvas_width * (1 / map_width)
-    adjustedY = canvas_height * ( 1 / map_height)
+    adjustedX = canvas_width * (1 / map_width);
+    adjustedY = canvas_height * (1 / map_height);
 
     // assign agents to robot array
     for (var key in agents) {
@@ -50,10 +50,20 @@ function setup() {
     }
 
     // assign objectives
-    pickup = new Target(board.pickupX * adjustedX, board.pickupY * adjustedY, "#CC6600", "P");
-    dropoff = new Target(board.dropoffX * adjustedX, board.dropoffY * adjustedY, "#993300", "D");
+    pickup = new Target(
+      board.pickupX * adjustedX,
+      board.pickupY * adjustedY,
+      "#CC6600",
+      "P"
+    );
+    dropoff = new Target(
+      board.dropoffX * adjustedX,
+      board.dropoffY * adjustedY,
+      "#993300",
+      "D"
+    );
 
-    pickup.setInterpolation(adjustedX, adjustedY)
+    pickup.setInterpolation(adjustedX, adjustedY);
 
     // Creating canvas
     const cv = createCanvas(canvas_width, canvas_height);
@@ -63,40 +73,60 @@ function setup() {
     socket.emit("reply", "init completed");
   });
 
+  startTime = new Date();
+  commandAmount = 0
+  timeline = 5
+
   // #command is equal to #robots
   socket.on("event", payload => {
     if (!run) return;
     try {
+
+      endTime = new Date();
+      var timeDiff = endTime - startTime; //in ms
+      // strip the ms
+      timeDiff /= 1000;
+
+      // get seconds
+      var seconds = Math.round(timeDiff);
+      commandAmount++
+
+      if(seconds > timeline){
+        console.log(commandAmount + " every 5 seconds ")
+        commandAmount = 0
+        timeline += 5
+      }
+
       requestLock();
       // console.log("Command: "+ commandJSON )
       command = payloadDecoder(payload);
       job_queue.push(command);
-      // console.log("Queue length: " + job_queue.length);
+      //console.log("Queue length: " + job_queue.length);
       if (job_queue.length > 100) job_queue = [];
     } finally {
       releaseLock();
     }
   });
 
-  socket.on("connect_failed", connect_failed)
-  socket.io.on("connect_error", connect_error)
+  socket.on("connect_failed", connect_failed);
+  socket.io.on("connect_error", connect_error);
 
   // Getting our buttons and the holder through the p5.js dom
   const color_btn = select("#color-btn");
 
   // Adding a mousePressed listener to the button
   color_btn.mousePressed(() => {
-    console.log("send reply")
+    console.log("send reply");
     socket.emit("reply", "init");
   });
 }
 
-function connect_failed(){
-  console.log("lemao")
+function connect_failed() {
+  console.log("lemao");
 }
 
-function connect_error(){
-  console.log("Server offline")
+function connect_error() {
+  console.log("Server offline");
 }
 
 function payloadDecoder(payload) {
@@ -153,12 +183,10 @@ function agent_job(command) {
 }
 
 function objective_job(x, y) {
-  pickup.display(
-    {
-      'x':x,
-      'y':y
-    } 
-  );
+  pickup.display({
+    x: x,
+    y: y
+  });
   dropoff.display({});
 }
 
@@ -187,9 +215,9 @@ class Target {
     this.letter = letter;
   }
   display(opts) {
-    if (opts['x'] > -1 && opts['y'] > -1){
-      this.posX = opts['x'] * this.canvasSpeedX
-      this.posY = opts['y'] * this.canvasSpeedY
+    if (opts["x"] > -1 && opts["y"] > -1) {
+      this.posX = opts["x"] * this.canvasSpeedX;
+      this.posY = opts["y"] * this.canvasSpeedY;
     }
     fill(this.fill);
     rect(this.posX, this.posY, 20, 20);
@@ -199,8 +227,8 @@ class Target {
   }
 
   setInterpolation(x, y) {
-    this.canvasSpeedX = x
-    this.canvasSpeedY = y
+    this.canvasSpeedX = x;
+    this.canvasSpeedY = y;
   }
 }
 

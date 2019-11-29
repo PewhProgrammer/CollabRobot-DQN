@@ -21,14 +21,6 @@ class Movement(Enum):
 
 
 class Robot(object):
-    posX = 0
-    posY = 0
-    diam = 0
-    speed = 0
-    height = 0
-    width = 0
-    target = 0
-    carrier = False
 
     # The class "constructor" - It's actually an initializer 
     def __init__(self, posX, posY, width, height, diameter, speed):
@@ -38,6 +30,7 @@ class Robot(object):
         self.speed = speed
         self.width = width
         self.height = height
+        self.carrier = False
 
     def wait(self):
         return
@@ -107,6 +100,7 @@ class Robot(object):
     def reset(self):
         self.posX = random.randint(0, self.width)
         self.posY = random.randint(0, self.height)
+        self.set_carrier(False)
 
 
 def get_sample_movement():
