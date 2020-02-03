@@ -1,11 +1,10 @@
 import numpy as np
 
 import gym
-from gym import error, spaces, utils
+from gym import spaces
 from gym.utils import seeding
 
-from common.environment import make_env
-from common.robot import Movement
+from containers.environment import Environment
 
 
 class EnvWrapper(gym.Env):
@@ -16,7 +15,7 @@ class EnvWrapper(gym.Env):
     def __init__(self, config=None):
         self.viewer = None
 
-        self.env = make_env(config=config)
+        self.env = Environment(config=config)
         # raise AttributeError("One must supply either a maze_file path (str) or the maze_size (tuple of length 2)")
 
         self.env_size = self.env.size
@@ -46,8 +45,8 @@ class EnvWrapper(gym.Env):
         return [seed]
 
     def step(self, action):
-        self.env.move_robot(action)
-        reward, carrying, done = self.env.requirements.validate(self.env)  # check if pickup and dropoff is successfull
+        self.env.move_robots(action)
+        reward, carrying, done = self.env.requirements.validate(self.env)  # check if pickup and dropoff is successful
 
         self.state = np.append(self.env.robot_position(), carrying)
 
@@ -56,14 +55,13 @@ class EnvWrapper(gym.Env):
         return self.state, reward, done, info
 
     def reset(self):
-        self.env.reset_robot()
-        self.env.reset_objectives()
         self.state = np.zeros(2)
         self.steps_beyond_done = None
         self.done = False
-        return np.append(self.env.robot.get_position(), 0)
+        return self.env.reset()
 
-    def render_state(self):
+    def get_env(self):
         return self.env
+
 
 

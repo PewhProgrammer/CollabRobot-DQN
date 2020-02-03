@@ -1,15 +1,21 @@
 import numpy as np
 import random
+
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
+import tensorflow as tf
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras.optimizers import Adam
-
 from collections import deque
+
+tf.get_logger().setLevel('INFO')
 
 
 class DQN(object):
 
-    def __init__(self, env):
+    def __init__(self, env, params=None):
         self.env = env
         self.memory = deque(maxlen=2000)
 
@@ -21,10 +27,15 @@ class DQN(object):
         self.tau = .05
 
         # "hack" implemented by DeepMind to improve convergence
-        self.model = self.create_model()
+        if params is None:
+            self.model = self.create_model()
+        else:
+            self.model = self.create_parametrised_model(params)
         self.target_model = self.create_model()
+        self.out = None  # model.fit output
 
     def create_model(self):
+
         model = Sequential()
         state_shape = self.env.observation_space.shape
         model.add(Dense(24, input_dim=3,
@@ -34,6 +45,17 @@ class DQN(object):
         model.add(Dense(self.env.action_space.n))
         model.compile(loss="mean_squared_error",
                       optimizer=Adam(lr=self.learning_rate))
+        return model
+
+    def create_parametrised_model(self, params):
+        model = Sequential()
+        model.add(Dense(24, input_dim=3,
+                        activation=params['activation']))
+        model.add(Dense(48, activation=params['activation']))
+        model.add(Dense(24, activation=params['activation']))
+        model.add(Dense(self.env.action_space.n))
+        model.compile(optimizer=params['optimizer'], loss=params['losses'])
+
         return model
 
     def act(self, state):
@@ -60,7 +82,7 @@ class DQN(object):
             else:
                 Q_future = max(self.target_model.predict(new_state)[0])
                 target[0][action] = reward + Q_future * self.gamma
-            self.model.fit(state, target, epochs=1, verbose=0)
+            self.out = self.model.fit(state, target, epochs=1, verbose=0)
 
     def target_train(self):
         weights = self.model.get_weights()

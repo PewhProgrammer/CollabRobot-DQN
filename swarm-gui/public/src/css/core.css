@@ -1,0 +1,8 @@
+.sketch-holder {
+  outline: black 3px solid;
+}
+
+.data-ready {
+  display: none;
+  visibility: hidden;
+}

@@ -13,6 +13,7 @@ class Requirements(object):
         self.pickup = pickup
         self.dropoff = dropoff
 
+    # calculate the points
     def validate(self, env):
 
         agent = env.robot
@@ -47,3 +48,13 @@ class Requirements(object):
 
     def punish(self, env_size):  # doesnt have the carrier, check if on dropoff zones
         return -1  # / (env_size[0] * env_size[1])
+
+# TODO
+    def check_collision(self, env, agent_pos):
+        collision = []
+        # only check if agent has collision with
+        for dummy in env.robots:
+            if dummy.get_position() == agent_pos:
+                collision.append(agent_pos)
+
+        return collision

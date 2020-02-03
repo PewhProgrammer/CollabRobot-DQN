@@ -1,40 +1,30 @@
 """Core ML module for predicting the next move of the robots
 """
 
-import random
-# import tensorflow as tf
-from common.env_wrapper import EnvWrapper
 from routes import render_env
-import numpy as np
-import time
-from data.DQN import DQN
-from common.environment import get_env
+import io_functions.game_logger as logger
 
-envWrap = None
+from logic.DQN import DQN
 
 
-def init_predictor(config):
-    global envWrap
-    envWrap = EnvWrapper(config)
-
-
-def run_prediction(sio):
-    env = envWrap
-
-    trials = 1000
+def run_prediction(envW, sio=None, params=None):
+    trials = params['epochs']
     trial_len = 500
 
     # updateTargetNetwork = 1000
-    dqn_agent = DQN(env=env)
+    dqn_agent = DQN(env=envW, params=params)
     steps = []
-    start_time = time.time()
-    move = 0
-    timeline = 5
+    step = 0
+
     for trial in range(trials):
-        cur_state = env.reset().reshape(1, 3)
+        cur_state = envW.reset().reshape(1, 3)
+        acc_rewards = 0
+        logger.save_init(envW.get_env())
         for step in range(trial_len):
+            identifier = "E" + str(envW.get_env().episode) + "_S" + str(step)
             action = dqn_agent.act(cur_state)
-            new_state, reward, done, _ = env.step(action)
+            new_state, reward, done, _ = envW.step(action)
+            acc_rewards += reward
 
             # reward = reward if not done else -20
             new_state = new_state.reshape(1, 3)
@@ -43,27 +33,26 @@ def run_prediction(sio):
             dqn_agent.replay()  # internally iterates default (prediction) model
             dqn_agent.target_train()  # iterates target model
 
-            render_env(env.render_state())
-            sio.sleep(0.000001)
-            elapsed_time = time.time() - start_time
-            if elapsed_time > timeline:
-                timeline += 5
-                # print("{} actions per 5 seconds".format(move))
-                move = 0
-
-            move += 1
+            # render_env(sio)
+            logger.save_state(envW.get_env(), identifier)
 
             cur_state = new_state
             if done:
                 break
         if step >= 199:
             print("Failed to complete in trial {}".format(trial))
+            # print(params['losses'], dqn_agent.out.history['loss'][-1])
             # if step % 10 == 0:
-                # dqn_agent.save_model("trial-{}.model".format(trial))
+            # dqn_agent.save_model("trial-{}.model".format(trial))
         else:
-            print("Completed in {} trial with {} steps".format(trial, step))
+            print("Completed in trial {} with {} steps".format(trial, step))
+            # print(params['losses'], dqn_agent.out.history['loss'][-1])
             # dqn_agent.save_model("success.model")
             # break
+
+        logger.save_end(envW.get_env(), acc_rewards)
+
+    return dqn_agent.out, dqn_agent.model
 
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # print(tf.reduce_sum(tf.random.normal([1000, 1000])))

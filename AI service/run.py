@@ -2,59 +2,36 @@
 """
 
 import sys
-import argparse
-from routes import init_flask_app
-from logic.predictor import init_predictor, run_prediction
+import config
+from logic.predictor import run_prediction
+from containers.env_wrapper import EnvWrapper
+
+import talos
+
+
+def apply_study():
+    x, y = talos.templates.datasets.iris()
+
+    def dqn(x_train, y_train, x_val, y_val, params):
+        # create evironment
+        envWrap = EnvWrapper(config.map_5x5)
+        return run_prediction(envWrap, params=params)
+
+    # NOTE: clear session prevents using too much memory, save_weights does not save each model, can also save memory
+    scan_object = talos.Scan(x, y, model=dqn, params=config.talos_params, experiment_name='study',
+                             fraction_limit=0.5, clear_session=True, save_weights=False)
+    return scan_object
 
 
 def main(args):
-    # print(args)
-    # default()
-    # pickup_example()
-    map_5x5()
-    sio_context = init_flask_app()
-    run_prediction(sio_context)
-    sio_context.sleep(5)
+    # create evironment
+    envWrap = EnvWrapper(config.map_5x5)
 
+    # apply_study()
 
-def pickup_example():
-    config = {
-        "id": 1,
-        "width": 10,
-        "height": 10,
-        "agents": 1,
-        "agentPosX": 5,
-        "agentPosY": 5,
-        "pickupX": 2,
-        "pickupY": 5,
-        "dropoffX": 8,
-        "dropoffY": 5
-    }
-    init_predictor(config)
-
-
-def map_5x5():
-    config = {
-        "id": 2,
-        "width": 5,
-        "height": 5,
-        "agents": 1,
-        "pickupX": 2,
-        "pickupY": 1,
-        "dropoffX": 4,
-        "dropoffY": 2
-    }
-    init_predictor(config)
-
-
-def default():
-    config = {
-        "id": 0,
-        "width": 20,
-        "height": 20,
-        "agents": 1
-    }
-    init_predictor(config)
+    # sio_context = init_flask_app(envWrap)
+    run_prediction(envWrap, params=config.default)
+    # sio_context.sleep(5)
 
 
 def parse_arguments(argv):
