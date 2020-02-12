@@ -12,7 +12,7 @@ function createStatistics(payload) {
       labels: [],
       datasets: [
         {
-          label: "Sessions",
+          label: "Episode",
           lineTension: 0.3,
           backgroundColor: "rgba(2,117,216,0.2)",
           borderColor: "rgba(2,117,216,1)",
@@ -31,9 +31,6 @@ function createStatistics(payload) {
       scales: {
         xAxes: [
           {
-            time: {
-              unit: "date"
-            },
             gridLines: {
               display: false
             },

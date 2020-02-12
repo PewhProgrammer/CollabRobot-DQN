@@ -3,7 +3,7 @@
 
 import sys
 import config
-from logic.predictor import run_prediction
+from logic.trainer import game_loop
 from containers.env_wrapper import EnvWrapper
 
 import talos
@@ -15,7 +15,7 @@ def apply_study():
     def dqn(x_train, y_train, x_val, y_val, params):
         # create evironment
         envWrap = EnvWrapper(config.map_5x5)
-        return run_prediction(envWrap, params=params)
+        return game_loop(envWrap, params=params)
 
     # NOTE: clear session prevents using too much memory, save_weights does not save each model, can also save memory
     scan_object = talos.Scan(x, y, model=dqn, params=config.talos_params, experiment_name='study',
@@ -30,7 +30,7 @@ def main(args):
     # apply_study()
 
     # sio_context = init_flask_app(envWrap)
-    run_prediction(envWrap, params=config.default)
+    game_loop(envWrap, params=config.default)
     # sio_context.sleep(5)
 
 

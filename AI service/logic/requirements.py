@@ -13,43 +13,42 @@ class Requirements(object):
         self.pickup = pickup
         self.dropoff = dropoff
 
-    # calculate the points
+    # calculate the points after a move has been made
     def validate(self, env):
+        reward = 0
+        done = False
 
-        agent = env.robot
-        agentPos = np.asarray(agent.get_position())
-        reward, carrying = self.check_carrier(agent, agentPos)  # done if pickup is reached
-        if not carrying:
-            return self.punish(env.size), carrying, False  # not done yet
+        for agent in env.robots:
+            # single reward are rewards obtained by a single unit
+            single_reward, carrying = self.check_carrier(agent)
+            reward += single_reward
 
-        env.pickup = agentPos  # set pickup to agents position
+            if not carrying:
+                return self.punish(), carrying, False  # not done yet
 
-        if reward >= 1:  # just picked up the pickup
-            return reward, carrying, False
+            single_reward, done = self.check_dropoff(agent)
+            reward + single_reward + self.punish(), carrying, done  # done if pickup is on dropoff
 
-        reward, done = self.check_dropoff(agentPos)
-        return reward + self.punish(env.size), carrying, done  # done if pickup is on dropoff
+        return reward, done
 
-    def check_carrier(self, agent, agentPos):
-        if agent.get_carrier():  # check if agent has carrier
-            return 0, True
+    def check_carrier(self, agent):
+        result = 0, False
+        # checks if the agent receives the carrier or not
+        if agent.check_carrier():
+            result = 0 if agent.rewarded else 10, True  # return reward of 10 if not rewarded before
+            agent.rewarded = True
+        return result
 
-        if np.array_equal(self.pickup, agentPos):
-            agent.set_carrier(True)
+    def check_dropoff(self, agent):
+        if agent.pickupObj.target_reached(self.dropoff):
             return 10, True
 
         return 0, False
 
-    def check_dropoff(self, agentPos):
-        if np.array_equal(self.dropoff, agentPos):
-            return 10, True
-
-        return 0, False
-
-    def punish(self, env_size):  # doesnt have the carrier, check if on dropoff zones
+    def punish(self, env_size=None):  # doesnt have the carrier, check if on dropoff zones
         return -1  # / (env_size[0] * env_size[1])
 
-# TODO
+    # TODO
     def check_collision(self, env, agent_pos):
         collision = []
         # only check if agent has collision with

@@ -30,7 +30,8 @@ class Robot(object):
         self.speed = speed
         self.width = width
         self.height = height
-        self.carrier = False
+        self.rewarded = False
+        self.pickupObj = (-1, None)
 
     def wait(self):
         return
@@ -86,21 +87,30 @@ class Robot(object):
         else:
             self.options[Movement(action)](self)
 
+        if self.pickupObj[1] is not None:
+            # i am a carrier
+            idx = self.pickupObj[0]
+            success = self.pickupObj[1].move_position(idx, self.get_position())
+
+            # if pickup got detached
+            if not success:
+                self.pickupObj = (0, None)
+
         return self.get_position()
+
+    def check_carrier(self):
+        return self.pickupObj[1] is not None
 
     def get_position(self):
         return self.posX, self.posY
 
-    def set_carrier(self, value):
-        self.carrier = value
-
-    def get_carrier(self):
-        return self.carrier
+    def set_pickup(self, idx, obj):
+        self.pickupObj = (idx, obj)
 
     def reset(self):
-        self.posX = random.randint(0, self.width)
-        self.posY = random.randint(0, self.height)
-        self.set_carrier(False)
+        self.posX = random.randint(0, self.width - 1)
+        self.posY = random.randint(0, self.height - 1)
+        self.pickupObj = (0, None)
 
 
 def get_sample_movement():

@@ -1,13 +1,14 @@
 // prettify ALT + SHIFT + F
 
-let pickup = null;
-let dropoff = null;
-const data = [];
 let episode = 0;
 let move = 0;
 let max_games_per_episode = 0;
-
 let game_epoch = 1;
+let pickup = null;
+let dropoff = null;
+const data = [];
+
+let stop = false
 
 function setup() {
   // Creating canvas
@@ -39,7 +40,7 @@ function setup() {
           // data a new table row
           // table.append($("<tr>"));
           let tr = $("<tr>");
-          tr.append($("<th>").text(`${payload.episode}`));
+          tr.append($("<th>").text(`${payload.episode.substr(1)}`));
           tr.append($("<th>").text(`${payload.width}x${payload.height}`));
           tr.append(
             $("<th>").text(
@@ -67,6 +68,15 @@ function setup() {
         .fadeIn("slow");
 
       $("#dataTable").DataTable();
+
+      $("tr").click(function(e){     //function_td
+        // console.log($(this).index());
+        episode = $(this).index()
+        move = 0 
+        init_new_grid(data[episode]);
+        e.stopPropagation();
+      });
+
     };
     reader.readAsText(file);
   };
@@ -78,6 +88,28 @@ function setup() {
     output.innerHTML = this.value;
     setFrameRate(parseInt(this.value));
   };
+
+  $("#stop").click(function(){
+    stop = !stop;
+    if(stop){
+      $('#prev').prop('disabled', false);	
+      $('#next').prop('disabled', false);
+      noLoop()
+      $('.fa-stop').removeClass('fa fa-play').addClass('fa-play')
+    } else {
+      $("#prev").attr("disabled", true);	
+      $("#next").attr("disabled", true);	
+      loop()
+      $('.fa-play').removeClass('fa fa-play').addClass('fa-stop')
+    }
+
+  }); 
+
+  $("#prev").click(function(){
+    move = move - 2 < 0 ? 0 : move - 2 ;
+    redraw()
+  }); 
+
 }
 
 function draw() {

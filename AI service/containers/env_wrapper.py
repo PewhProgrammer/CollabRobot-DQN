@@ -18,7 +18,7 @@ class EnvWrapper(gym.Env):
         self.env = Environment(config=config)
         # raise AttributeError("One must supply either a maze_file path (str) or the maze_size (tuple of length 2)")
 
-        self.env_size = self.env.size
+        self.env_size = (config["width"], config["height"])
 
         # all movements + wait action
         self.action_space = spaces.Discrete(4 * len(self.env_size) + 1)
@@ -26,16 +26,14 @@ class EnvWrapper(gym.Env):
         # observation is the x, y coordinate of the grid
         low = np.zeros(len(self.env_size), dtype=int)
         high = np.array(self.env_size, dtype=int) - np.ones(len(self.env_size), dtype=int)
-        self.observation_space = spaces.Box(low, high, dtype=np.int64)
+        self.observation_space = 7
 
         # initial condition
-        self.state = None
         self.steps_beyond_done = None
         self.done = False
 
         # Simulation related variables.
         self.seed()
-        self.reset()
 
         # Just need to initialize the relevant attributes
         # self.configure()
@@ -48,17 +46,25 @@ class EnvWrapper(gym.Env):
         self.env.move_robots(action)
         reward, carrying, done = self.env.requirements.validate(self.env)  # check if pickup and dropoff is successful
 
-        self.state = np.append(self.env.robot_position(), carrying)
+        self.env.update_grid()
+
+        # determine data for input layer
+        state = self.input_data(carrying)
 
         info = {}
 
-        return self.state, reward, done, info
+        return state, reward, done, info
 
-    def reset(self):
-        self.state = np.zeros(2)
+    # scheme: agent pos, pickup pos, dropoff pos, carrying
+    def input_data(self, c):
+        shape = np.concatenate((self.env.robot_position(), self.env.pickup.get_positions()[0], self.env.dropoff.get_positions()[0], c), axis=None)
+        return shape.reshape(1, self.observation_space)
+
+    def reset(self, trial):
         self.steps_beyond_done = None
         self.done = False
-        return self.env.reset()
+        self.env.reset(trial)
+        return self.input_data(False)
 
     def get_env(self):
         return self.env

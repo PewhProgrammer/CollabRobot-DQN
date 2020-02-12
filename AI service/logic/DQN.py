@@ -37,8 +37,7 @@ class DQN(object):
     def create_model(self):
 
         model = Sequential()
-        state_shape = self.env.observation_space.shape
-        model.add(Dense(24, input_dim=3,
+        model.add(Dense(24, input_dim=self.env.observation_space,
                         activation="relu"))
         model.add(Dense(48, activation="relu"))
         model.add(Dense(24, activation="relu"))
@@ -49,7 +48,7 @@ class DQN(object):
 
     def create_parametrised_model(self, params):
         model = Sequential()
-        model.add(Dense(24, input_dim=3,
+        model.add(Dense(24, input_dim=self.env.observation_space,
                         activation=params['activation']))
         model.add(Dense(48, activation=params['activation']))
         model.add(Dense(24, activation=params['activation']))

@@ -80,8 +80,8 @@ class Robot {
   }
 
   move(x, y) {
-    this.x = (x+1) * this.canvasSpeedX;
-    this.y = (y+1) * this.canvasSpeedY;
+    this.x = x * this.canvasSpeedX;
+    this.y = y * this.canvasSpeedY;
   }
 
   setInterpolation(x, y) {

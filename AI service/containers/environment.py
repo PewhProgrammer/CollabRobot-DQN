@@ -6,6 +6,9 @@
 import math
 import random
 import numpy as np
+import networkx as nx
+from containers.grid import Grid
+from common.objectives import generate_objective
 
 from common.robot_factory import make_agent, make_dummy
 from logic.requirements import Requirements
@@ -20,13 +23,15 @@ class Environment(object):
         else:
             raise AttributeError(f'{self.__class__.__name__}.{config} config not given.')
 
+        self.config = config
+
         self.width = self.config["width"]
         self.height = self.config["height"]
-        self.size = (self.width, self.height)
+
+        self.grid = Grid(config)
 
         self.robot = make_agent(width=self.width, height=self.height)
-        self.robots = []
-        self.robots.append(self.robot)  # agent always in #1
+        self.robots = [self.robot]  # agent always in #1
 
         self.last_action = None
         self.episode = -1
@@ -34,28 +39,15 @@ class Environment(object):
         for i in range(self.config["dummies"]):
             self.robots.append(make_dummy(width=self.width, height=self.height))
 
-        self.generate_objective()
+        self.pickup, self.dropoff = generate_objective(config['pickup'][1], config['dropoff'][1])
+        # TODO whole requirements function
         self.requirements = Requirements(self.pickup, self.dropoff)
 
-    def generate_objective(self):
-        if self.config is None:
-            pickupX, pickupY, dropoffX, dropoffY = -1, -1, -1, -1
-        else:
-            pickupX, pickupY, dropoffX, dropoffY = [self.config["pickupX"], self.config["pickupY"],
-                                                    self.config["dropoffX"], self.config["dropoffY"]]
+        self.update_grid()
 
-        # create new pickup and dropoff point
-        self.pickup = self.generate_random_point(pickupX, pickupY)
-        self.dropoff = self.generate_random_point(dropoffX, dropoffY)
-
-    def generate_random_point(self, x, y) -> np.array:
-
-        if x == -1:
-            x = math.floor((self.width - 1) * random.uniform(0.0, 1.0))
-        if y == -1:
-            y = math.floor((self.height - 1) * random.uniform(0.0, 1.0))
-
-        return np.array([x, y])
+    def update_grid(self):
+        self.grid.update(self.robots, self.pickup, self.dropoff)
+        k = 2
 
     def move_robots(self, action):
         # move the agent with the action and move the dummys with random action
@@ -71,17 +63,17 @@ class Environment(object):
         dict = []
 
         for r in self.robots:
-
             pos = r.get_position()
             dict.append(pos)
 
         return dict
 
-    def reset(self):
+    def reset(self, trial):
         for r in self.robots:
             r.reset()
-        self.generate_objective()
+        self.pickup, self.dropoff = generate_objective(self.config['pickup'][1], self.config['dropoff'][1])
+        self.requirements = Requirements(self.pickup, self.dropoff)
         # reset means new start of episode
-        self.episode += 1
+        self.episode = trial
 
-        return np.append(self.robot.get_position(), 0)
+        self.update_grid()

@@ -234,17 +234,6 @@
                     >
                   </div>
                 </div>
-
-                <div class="button data-ready">
-                  <button
-                    id="next"
-                    type="button"
-                    class="btn btn-primary"
-                    onclick="redraw();"
-                  >
-                    Next
-                  </button>
-                </div>
               </div>
               <div class="col-xl-3 col-md-6 data-ready">
                 <div class="card bg-warning text-white mb-4">
@@ -305,7 +294,35 @@
               <div class="col-xl-6 data-ready">
                 <div class="card mb-4">
                   <div class="card-header">
-                    <i class="fab fa-uikit mr-1"></i>Graphical Interface
+                    <div class="d-flex justify-content-between">
+                      <div><i class="fab fa-uikit mr-1"></i>Graphical Interface</div>
+                        <div class="h-50 button data-ready">
+                          <button
+                            id="prev"
+                            type="button"
+                            class="btn btn-primary btn-sm" disabled
+                          >
+                            Prev
+                          </button>
+                          <button
+                          id="stop"
+                          type="button"
+                          class="btn btn-primary btn-sm"
+                          onclick="redraw();"
+                        >
+                        <i class="fa fa-stop"></i>
+                        </button>
+                          <button
+                            id="next"
+                            type="button"
+                            class="btn btn-primary btn-sm" disabled
+                            onclick="redraw();"
+                          >
+                            Next
+                          </button>
+                        </div>
+
+                    </div>
                   </div>
                   <div class="card-body">
                     <div class="row">
@@ -372,7 +389,7 @@
             </div>
             <div class="card mb-4 data-ready">
               <div class="card-header">
-                <i class="fas fa-table mr-1"></i>DataTable Example
+                <i class="fas fa-table mr-1"></i>Log Data
               </div>
               <div class="card-body">
                 <div class="table-responsive">
