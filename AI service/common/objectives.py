@@ -18,15 +18,34 @@ class Objectives(object):
     def __init__(self, t: ObjectiveType = None):
         self._positions = []
         self._type = t
+        self.occupant = 0
 
     def add_point(self, x, y):
         self._positions.append((x, y))
         return True
 
+    def increase_occupant(self):
+        self.occupant += 1
+
+    def decrease_occupant(self):
+        self.occupant -= 1
+
+    def get_single_position(self, id) -> np.array:
+        r = self._positions[id]
+        return np.array([r[0], r[1]])
+
+    def get_positions_np(self) -> np.array:
+        agents = self.get_single_position(0)
+        for i in range(len(self._positions) - 1):
+            agents = np.concatenate( (agents, self.get_single_position(i+1) ))
+
+        return agents
+
     def get_positions(self):
         return self._positions
 
     def move_position(self, idx, movePos: ()):
+        # is used in robots method move()
         # check if possible to move the pickup
         if self._type == ObjectiveType.DROPOFF:
             return False
@@ -37,8 +56,13 @@ class Objectives(object):
             if occupied[0] == movePos[0] and occupied[1] == movePos[1]:
                 return False  # pickup would be moved onto another pickup spot
 
-            if abs(occupied[0] - movePos[0]) > 1 or abs(occupied[1] - movePos[1]):
+            if abs(occupied[0] - movePos[0]) > 1 or abs(occupied[1] - movePos[1]) > 1:
                 return False  # x,y-coordinate is too far apart
+
+        # check if all pickup objects are occupied
+        if self.occupant < len(self._positions) and self._positions[idx] != movePos:
+            # we want to move but not enough occupants
+            return False
 
         self._positions[idx] = movePos
         return True

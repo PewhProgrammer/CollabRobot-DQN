@@ -29,9 +29,10 @@ class Environment(object):
         self.height = self.config["height"]
 
         self.grid = Grid(config)
+        self.robots = []  # agent always in #1
 
-        self.robot = make_agent(width=self.width, height=self.height)
-        self.robots = [self.robot]  # agent always in #1
+        for i in range(self.config["agents"]):
+            self.robots.append(make_agent(width=self.width, height=self.height))
 
         self.last_action = None
         self.episode = -1
@@ -40,24 +41,29 @@ class Environment(object):
             self.robots.append(make_dummy(width=self.width, height=self.height))
 
         self.pickup, self.dropoff = generate_objective(config['pickup'][1], config['dropoff'][1])
-        # TODO whole requirements function
-        self.requirements = Requirements(self.pickup, self.dropoff)
+
+        self.requirements = Requirements(self.grid)
 
         self.update_grid()
 
     def update_grid(self):
         self.grid.update(self.robots, self.pickup, self.dropoff)
-        k = 2
 
-    def move_robots(self, action):
+    def move_robots(self, action, rID):
         # move the agent with the action and move the dummys with random action
         self.last_action = int(action)
-        for r in self.robots:
-            r.move(action)
+        self.robots[rID].move(action)
 
-    def robot_position(self) -> np.array:
-        r = self.robot.get_position()
+    def robot_position(self, rID) -> np.array:
+        r = self.robots[rID].get_position()
         return np.array([r[0], r[1]])
+
+    def all_agents_position(self):
+        agents =self.robot_position(0)
+        for i in range(len(self.robots) - 1):
+            agents = np.concatenate( (agents, self.robot_position(i+1)) )
+
+        return agents
 
     def robot_positions(self):
         dict = []
@@ -72,7 +78,7 @@ class Environment(object):
         for r in self.robots:
             r.reset()
         self.pickup, self.dropoff = generate_objective(self.config['pickup'][1], self.config['dropoff'][1])
-        self.requirements = Requirements(self.pickup, self.dropoff)
+        self.requirements = Requirements(self.grid)
         # reset means new start of episode
         self.episode = trial
 

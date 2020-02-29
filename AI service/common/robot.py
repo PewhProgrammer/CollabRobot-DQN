@@ -94,18 +94,21 @@ class Robot(object):
 
             # if pickup got detached
             if not success:
+                self.pickupObj[1].decrease_occupant()
                 self.pickupObj = (0, None)
 
         return self.get_position()
 
-    def check_carrier(self):
+    def has_pickup(self):
         return self.pickupObj[1] is not None
 
     def get_position(self):
         return self.posX, self.posY
 
     def set_pickup(self, idx, obj):
-        self.pickupObj = (idx, obj)
+        if not self.has_pickup():
+            self.pickupObj = (idx, obj)
+            obj.increase_occupant()
 
     def reset(self):
         self.posX = random.randint(0, self.width - 1)

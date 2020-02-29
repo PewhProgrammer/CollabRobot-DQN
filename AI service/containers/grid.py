@@ -15,10 +15,7 @@ class Grid(object):
         self._height = config["height"]
         self._obstacle = '*'
         self._stored_positions = []
-
-        self.grid = [[0 for x in range(self._width)] for y in range(self._height)]
-
-        return
+        self.grid = [[[] for x in range(self._width)] for y in range(self._height)]
 
     def build_obstacles(self):
         return
@@ -43,22 +40,35 @@ class Grid(object):
             x, y = i.get_position()
             self._stored_positions.append((x, y))
             try:
-                self.grid[x][y] = i
+                self.grid[x][y].append(i)
             except IndexError:
                 print("{}, {}".format(x, y))
 
         for i in range(len(pickup.get_positions())):
-            x,y = pickup.get_positions()[i]
-            if self.grid[x][y] is not 0: # pickup is on a position of an agent
-                self.grid[x][y].set_pickup(i, pickup)
+            x, y = pickup.get_positions()[i]
+            if len(self.grid[x][y]) > 0:  # pickup is on a position of an agent
+                self.grid[x][y][0].set_pickup(i, pickup)  # take the first agent on that grid position
             else:
                 self._stored_positions.append((x, y))
-                self.grid[x][y] = pickup
+                self.grid[x][y].append(pickup)
 
         for x, y in dropoff.get_positions():
             self._stored_positions.append((x, y))
-            self.grid[x][y] = dropoff
+            self.grid[x][y].append(dropoff)
+
+    def check_pickup_delivery(self, x, y):
+        """
+        looks if agentPos in grid has pickup and dropoff object
+        :return: Boolean value indicating if agent successfully dropped of the pickup target
+        """
+
+        # if the list contains more than 3 objects (agent,pickup, dropoff)
+        # works since same objective type cant be on top of each other
+        if len(self.grid[x][y]) > 2:
+            return True
+
+        return False
 
     def reset_grid(self):
         for x, y in self._stored_positions:
-            self.grid[x][y] = 0
+            self.grid[x][y] = []

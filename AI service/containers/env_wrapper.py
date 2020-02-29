@@ -26,7 +26,7 @@ class EnvWrapper(gym.Env):
         # observation is the x, y coordinate of the grid
         low = np.zeros(len(self.env_size), dtype=int)
         high = np.array(self.env_size, dtype=int) - np.ones(len(self.env_size), dtype=int)
-        self.observation_space = 7
+        self.observation_space = 13
 
         # initial condition
         self.steps_beyond_done = None
@@ -42,32 +42,31 @@ class EnvWrapper(gym.Env):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def step(self, action):
-        self.env.move_robots(action)
-        reward, carrying, done = self.env.requirements.validate(self.env)  # check if pickup and dropoff is successful
-
+    def step(self, action, rID):
+        self.env.move_robots(action, rID)
         self.env.update_grid()
+        reward, done = self.env.requirements.validate(self.env.robots[rID])  # check if pickup and dropoff is successful
 
         # determine data for input layer
-        state = self.input_data(carrying)
+        state = self.input_data(rID)
 
         info = {}
 
         return state, reward, done, info
 
     # scheme: agent pos, pickup pos, dropoff pos, carrying
-    def input_data(self, c):
-        shape = np.concatenate((self.env.robot_position(), self.env.pickup.get_positions()[0], self.env.dropoff.get_positions()[0], c), axis=None)
+    def input_data(self, robotID):
+        data = self.env.all_agents_position(), \
+               self.env.pickup.get_positions_np(), \
+               self.env.dropoff.get_positions_np(), \
+               self.env.robots[robotID].has_pickup()
+        shape = np.concatenate(data, axis=None)
         return shape.reshape(1, self.observation_space)
 
     def reset(self, trial):
         self.steps_beyond_done = None
         self.done = False
         self.env.reset(trial)
-        return self.input_data(False)
 
     def get_env(self):
         return self.env
-
-
-

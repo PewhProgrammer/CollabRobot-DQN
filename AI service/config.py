@@ -30,8 +30,8 @@ map_5x5 = {
     "id": 1,
     "width": 5,
     "height": 5,
-    "agents": 1,
+    "agents": 2,
     "pickup": {1: [(2, 1), (3, 1)]},
     "dropoff": {1: [(3, 3), (4, 3)]},
-    "dummies": 0
+    "dummies": 0 # they are not moving rn, left unimplemented
 }

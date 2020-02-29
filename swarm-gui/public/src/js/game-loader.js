@@ -4,15 +4,15 @@ let episode = 0;
 let move = 0;
 let max_games_per_episode = 0;
 let game_epoch = 1;
-let pickup = null;
-let dropoff = null;
+let pickups = [];
+let dropoffs = [];
 const data = [];
 
-let stop = false
+let stop = false;
 
 function setup() {
   // Creating canvas
-  cv = createCanvas(canvas_width + 100, canvas_height + 100);
+  cv = createCanvas(canvas_width, canvas_height);
   cv.parent("sketch-holder");
   cv.background(50, 89, 100);
 
@@ -58,7 +58,7 @@ function setup() {
 
       createStatistics(data);
 
-      init_new_grid(data[0])
+      init_new_grid(data[0]);
 
       $("#dataTable").append(table);
 
@@ -69,10 +69,10 @@ function setup() {
 
       $("#dataTable").DataTable();
 
-      $("tr").click(function(e){     //function_td
-        // console.log($(this).index());
-        episode = $(this).index()
-        move = 0 
+      $( "#dataTable tbody" ).on( "click", "tr", function() {
+    
+        episode = $( this ).children('th:first').text();
+        move = 0;
         init_new_grid(data[episode]);
         e.stopPropagation();
       });
@@ -89,33 +89,35 @@ function setup() {
     setFrameRate(parseInt(this.value));
   };
 
-  $("#stop").click(function(){
+  $("#stop").click(function() {
     stop = !stop;
-    if(stop){
-      $('#prev').prop('disabled', false);	
-      $('#next').prop('disabled', false);
-      noLoop()
-      $('.fa-stop').removeClass('fa fa-play').addClass('fa-play')
+    if (stop) {
+      $("#prev").prop("disabled", false);
+      $("#next").prop("disabled", false);
+      noLoop();
+      $(".fa-stop")
+        .removeClass("fa fa-play")
+        .addClass("fa-play");
     } else {
-      $("#prev").attr("disabled", true);	
-      $("#next").attr("disabled", true);	
-      loop()
-      $('.fa-play').removeClass('fa fa-play').addClass('fa-stop')
+      $("#prev").attr("disabled", true);
+      $("#next").attr("disabled", true);
+      loop();
+      $(".fa-play")
+        .removeClass("fa fa-play")
+        .addClass("fa-stop");
     }
+  });
 
-  }); 
-
-  $("#prev").click(function(){
-    move = move - 2 < 0 ? 0 : move - 2 ;
-    redraw()
-  }); 
-
+  $("#prev").click(function() {
+    move = move - 2 < 0 ? 0 : move - 2;
+    redraw();
+  });
 }
 
 function draw() {
   // if(!run) return
 
-  background(50, 89, 100);
+  background(0, 102, 102);
   fill(255);
   //displayLine();
 
@@ -138,12 +140,12 @@ function get_Command() {
   }
 
   const episode_container = data[episode];
- 
+
   try {
     return JSON.parse(episode_container.games[move]);
   } finally {
     move++;
-    if (Object.keys(episode_container.games).length <= move + 1) {
+    if (Object.keys(episode_container.games).length <= move) {
       move = 0;
       episode++;
       init_new_grid(episode_container);
@@ -170,21 +172,22 @@ function init_new_grid(board) {
 }
 
 function create_objectives(board) {
-  // assign objectives
-  pickup = new Target(
-    board.pickup[0] * adjustedX,
-    board.pickup[1] * adjustedY,
-    "#CC6600",
-    "P"
-  );
-  dropoff = new Target(
-    board.dropoff[0] * adjustedX,
-    board.dropoff[1] * adjustedY,
-    "#993300",
-    "D"
-  );
+  pickups.push(fill_objective(board.pickup, "#CC6600", "P"))
+  dropoffs.push(fill_objective(board.dropoff, "#3CB371", "D"))
+}
 
-  pickup.setInterpolation(adjustedX, adjustedY);
+function fill_objective(target, fill, letter){
+  t = null;
+
+  target.forEach(function(value, i) {
+    if (i == 0) {
+      t = new Target(value, adjustedX, adjustedY, fill, letter);
+    } else {
+      t.addPoints(value);
+    }
+  });
+
+  return t
 }
 
 function create_agents(agents) {
@@ -192,7 +195,7 @@ function create_agents(agents) {
     if (agents.hasOwnProperty(key)) {
       pos = agents[key];
       agent = key == 0 ? true : false;
-      robot = new Robot(pos[0], pos[1], 20, 1, agent);
+      robot = new Robot(pos, 20, 1, agent);
       robot.setInterpolation(adjustedX, adjustedY);
       robots.push(robot);
     }
