@@ -22,7 +22,7 @@ class DQN(object):
         self.gamma = 0.95
         self.epsilon = 1.0
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995
+        self.epsilon_decay = 0.9995  # default was 0.995
         self.learning_rate = 0.01
         self.tau = .05
 

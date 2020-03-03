@@ -46,7 +46,7 @@ def game_loop(envW, sio=None, params=None):
             if done:
                 break
         if step >= 50:
-            print("Failed to complete in trial {}".format(trial))
+            print("Failed to complete in trial {} with {} steps".format(trial, step))
             # print(params['losses'], dqn_agent.out.history['loss'][-1])
             # if step % 10 == 0:
             # dqn_agent.save_model("trial-{}.model".format(trial))
@@ -55,8 +55,9 @@ def game_loop(envW, sio=None, params=None):
             # print(params['losses'], dqn_agent.out.history['loss'][-1])
             # dqn_agent.save_model("success.model")
             # break
-
-        logger.save_end(envW.get_env(), acc_rewards)
+        if trial % 20 == 0:
+            print("Saved no. {} trial with {} epsilon".format(str(trial), dqn_agents[0].epsilon))
+            logger.save_end(envW.get_env(), acc_rewards)
 
     # return dqn_agent.out, dqn_agent.model
 

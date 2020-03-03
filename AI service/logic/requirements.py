@@ -47,7 +47,7 @@ class Requirements(object):
         punishment = -1
 
         if agent.has_pickup():
-            punishment = -0.1
+            punishment = -0.8
 
         return punishment  # / (env_size[0] * env_size[1])
 

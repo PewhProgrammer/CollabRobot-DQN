@@ -6,7 +6,7 @@ default = {'activation': 'relu',
            'hidden_layers': [0],
            'dropout': [0],
            'batch_size': [0],
-           'epochs': 500,  # uses early stopping
+           'epochs': 2000,  # uses early stopping
            'shape': ['triangle', 'brick'],
            'early_stopping': [True],
            'patience': [5],
