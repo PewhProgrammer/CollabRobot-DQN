@@ -5,12 +5,17 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import tensorflow as tf
+import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
 from keras.optimizers import Adam
 from collections import deque
 
 tf.get_logger().setLevel('INFO')
+
+config = tf.compat.v1.ConfigProto( device_count = {'GPU': 1 , 'CPU': 1} )
+sess = tf.compat.v1.Session(config=config)
+keras.backend.set_session(sess)
 
 
 class DQN(object):
