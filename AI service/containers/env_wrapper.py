@@ -26,7 +26,7 @@ class EnvWrapper(gym.Env):
         # observation is the x, y coordinate of the grid
         low = np.zeros(len(self.env_size), dtype=int)
         high = np.array(self.env_size, dtype=int) - np.ones(len(self.env_size), dtype=int)
-        self.observation_space = 13
+        self.observation_space = config["observation_space"]
 
         # initial condition
         self.steps_beyond_done = None
@@ -44,8 +44,9 @@ class EnvWrapper(gym.Env):
 
     def step(self, action, rID):
         self.env.move_robots(action, rID)
+        self.env.move_objectives(rID)
         self.env.update_grid()
-        reward, done = self.env.requirements.validate(self.env.robots[rID])  # check if pickup and dropoff is successful
+        reward, done = self.env.requirements.validate(self.env, self.env.robots[rID], action)  # check if pickup and dropoff is successful
 
         # determine data for input layer
         state = self.input_data(rID)
@@ -57,9 +58,9 @@ class EnvWrapper(gym.Env):
     # scheme: agent pos, pickup pos, dropoff pos, carrying
     def input_data(self, robotID):
         data = self.env.all_agents_position(), \
-               self.env.pickup.get_positions_np(), \
-               self.env.dropoff.get_positions_np(), \
-               self.env.robots[robotID].has_pickup()
+               self.env.objective_manager.pickup_get_positions_np(), \
+               self.env.objective_manager.dropoff_get_positions_np(), \
+               self.env.objective_manager.has_pickup(robotID)
         shape = np.concatenate(data, axis=None)
         return shape.reshape(1, self.observation_space)
 

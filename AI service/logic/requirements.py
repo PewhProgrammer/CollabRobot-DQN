@@ -15,48 +15,49 @@ class Requirements(object):
         self.grid = grid
 
     # calculate the points after a move has been made
-    def validate(self, agent):
-
+    def validate(self, env, agent, actionID):
         # we are using separated reward function
-        reward, carrying = self.check_carrier(agent)
+        reward, carrying = self.check_carrier(agent, env.objective_manager)
+
+        punishment = self.punish(agent, actionID)
+        punishment += self.punish_collision(agent.get_position())
 
         if not carrying:
-            return self.punish(agent) + reward, False  # not done yet
+            return punishment + reward, False  # not done yet
 
-        single_r, done = self.check_dropoff(agent)
+        # check if the agent has reached the dropoff area
+        single_r, done = self.check_dropoff(agent, env.objective_manager)
         reward += single_r
 
-        return reward + self.punish(agent), done  # done if pickup is on dropoff
+        return reward + punishment, done  # done if pickup is on dropoff
 
-    def check_carrier(self, agent):
+    def check_carrier(self, agent, obj_manager):
         result = 0, False
         # checks if the agent receives the carrier or not
-        if agent.has_pickup():
+        if agent.id in obj_manager.get_robot_objective_dict():
             result = 0 if agent.rewarded else 10, True  # return reward of 10 if not rewarded before
             agent.rewarded = True
         return result
 
-    def check_dropoff(self, agent):
-        x, y = agent.get_position()
-        if self.grid.check_pickup_delivery(x, y):
-            return 10, True
+    def check_dropoff(self, agent, obj_manager):
+        if self.grid.check_pickup_delivery(agent.id, obj_manager):
+            reward = obj_manager.get_delivery_reward(agent.id)
+            return reward, True
 
         return 0, False
 
-    def punish(self, agent):
-        punishment = -1
+    def punish(self, agent, actionID):
+        punishment = 0  # default punishment
 
-        if agent.has_pickup():
-            punishment = -0.8
+        # if action is wait, punish twice as much
+        if actionID == 0:
+            punishment = -0.1
 
         return punishment  # / (env_size[0] * env_size[1])
 
-    # TODO
-    def check_collision(self, env, agent_pos):
-        collision = []
-        # only check if agent has collision with
-        for dummy in env.robots:
-            if dummy.get_position() == agent_pos:
-                collision.append(agent_pos)
+    def punish_collision(self,  agent_pos):
+        collision = self.grid.check_collision(agent_pos)
 
-        return collision
+        if collision:
+            return -10
+        return 0

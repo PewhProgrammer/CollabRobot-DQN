@@ -25,7 +25,7 @@ def apply_study():
 
 def main(args):
     # create evironment
-    envWrap = EnvWrapper(config.map_5x5)
+    envWrap = EnvWrapper(config.sample_easy)
 
     # apply_study()
 

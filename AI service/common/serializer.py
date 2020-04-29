@@ -17,7 +17,7 @@ def export_state(env, state_id="NONE"):
 
     x = {
         "id" : str(state_id),
-        "locations": {"pickup": env.pickup.get_positions(),
+        "locations": {"pickup": list(env.objective_manager.pickup_get_positions_np()),
                       "agents": env.robot_positions()},
         "collisions": [],
         "action": env.last_action,
@@ -49,8 +49,8 @@ def export_start_state(env):
         "episode": 'E' + str(env.episode),
         "width": env.width,
         "height": env.height,
-        "start_locations": {"pickup": env.pickup.get_positions(),
-                      "dropoff": env.dropoff.get_positions(),
+        "start_locations": {"pickup": list(env.objective_manager.pickup_get_positions_np()),
+                      "dropoff": list(env.objective_manager.dropoff_get_positions_np()),
                       "agents": env.robot_positions()}
     }
 

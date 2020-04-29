@@ -33,5 +33,17 @@ map_5x5 = {
     "agents": 2,
     "pickup": {1: [(2, 1), (3, 1)]},
     "dropoff": {1: [(3, 3), (4, 3)]},
-    "dummies": 0 # they are not moving rn, left unimplemented
+    "dummies": 0,  # they are not moving rn, left unimplemented
+    "observation_space": 13
+}
+
+sample_easy = {
+    "id": 2,
+    "width": 31,
+    "height": 17,
+    "map": "maps/sample_easy.map",
+    "agents": 1,
+    "dummies": 0,
+    "connected_objectives": [(1, 2)],
+    "observation_space": 7
 }

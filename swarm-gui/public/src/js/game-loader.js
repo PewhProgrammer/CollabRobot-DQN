@@ -7,6 +7,7 @@ let game_epoch = 1;
 let pickups = [];
 let dropoffs = [];
 const data = [];
+let board = [[]]
 
 let stop = false;
 
@@ -16,14 +17,13 @@ function setup() {
   cv.parent("sketch-holder");
   cv.background(50, 89, 100);
 
-  document.getElementById("file").onchange = function() {
+  document.getElementById("log-file").onchange = function() {
     const file = this.files[0];
     const reader = new FileReader();
 
     reader.onload = function(progressEvent) {
-      console.log(file);
       // display file name on input field
-      $(`.custom-file-label`).html(file.name);
+      $(`#log-file-label`).html(file.name);
 
       // construct data Table
       let table = $("<tbody>");
@@ -62,21 +62,40 @@ function setup() {
 
       $("#dataTable").append(table);
 
-      $(".data-ready")
-        .css("visibility", "visible")
-        .hide()
-        .fadeIn("slow");
-
       $("#dataTable").DataTable();
 
-      $( "#dataTable tbody" ).on( "click", "tr", function() {
-    
-        episode = $( this ).children('th:first').text();
+      $("#dataTable tbody").on("click", "tr", function(e) {
+        episode = $(this)
+          .children("th:first")
+          .text();
         move = 0;
         init_new_grid(data[episode]);
         e.stopPropagation();
       });
+    };
+    reader.readAsText(file);
+  };
 
+  document.getElementById("map-file").onchange = function() {
+    const file = this.files[0];
+    const reader = new FileReader();
+    // display file name on input field
+    $(`#map-file-label`).html(file.name);
+
+    reader.onload = function(progressEvent) {
+      // By lines
+      var lines = this.result.split("\n");
+      for (let line = 0; line < lines.length; line++) {
+        str = lines[line];
+        
+        board[line] = str.split("");
+      }
+
+      // display everything
+      $(".data-ready")
+      .css("visibility", "visible")
+      .hide()
+      .fadeIn("slow");
     };
     reader.readAsText(file);
   };
@@ -130,8 +149,9 @@ function draw() {
   }
 
   // update
-  agent_job(c.locations.agents);
+  obstacle_job(board,adjustedX, adjustedY);
   objective_job(c.locations.pickup);
+  agent_job(c.locations.agents);
 }
 
 function get_Command() {
@@ -161,6 +181,7 @@ function init_new_grid(board) {
   adjustedX = canvas_width * (1 / map_width);
   adjustedY = canvas_height * (1 / map_height);
 
+
   create_objectives(board.start_locations);
   create_agents(board.start_locations.agents);
 
@@ -172,12 +193,13 @@ function init_new_grid(board) {
 }
 
 function create_objectives(board) {
-  pickups.push(fill_objective(board.pickup, "#CC6600", "P"))
-  dropoffs.push(fill_objective(board.dropoff, "#3CB371", "D"))
+  pickups.push(fill_objective(board.pickup, "#CC6600", "P"));
+  dropoffs.push(fill_objective(board.dropoff, "#3CB371", "D"));
 }
 
-function fill_objective(target, fill, letter){
+function fill_objective(target_single, fill, letter) {
   t = null;
+  target = [target_single]
 
   target.forEach(function(value, i) {
     if (i == 0) {
@@ -187,7 +209,7 @@ function fill_objective(target, fill, letter){
     }
   });
 
-  return t
+  return t;
 }
 
 function create_agents(agents) {

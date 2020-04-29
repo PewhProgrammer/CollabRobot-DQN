@@ -15,20 +15,16 @@ class ObjectiveType(Enum):
 
 class Objectives(object):
 
-    def __init__(self, t: ObjectiveType = None):
+    def __init__(self, p_pos, d_pos):
         self._positions = []
-        self._type = t
-        self.occupant = 0
+        self._pickup = p_pos  # tuple (y,x)
+        self._dropoff = d_pos
+        self._delivered = False
+        self._delivery_reward = 30
 
     def add_point(self, x, y):
         self._positions.append((x, y))
         return True
-
-    def increase_occupant(self):
-        self.occupant += 1
-
-    def decrease_occupant(self):
-        self.occupant -= 1
 
     def get_single_position(self, id) -> np.array:
         r = self._positions[id]
@@ -37,40 +33,41 @@ class Objectives(object):
     def get_positions_np(self) -> np.array:
         agents = self.get_single_position(0)
         for i in range(len(self._positions) - 1):
-            agents = np.concatenate( (agents, self.get_single_position(i+1) ))
+            agents = np.concatenate((agents, self.get_single_position(i + 1)))
 
         return agents
 
-    def get_positions(self):
-        return self._positions
+    def get_dropoff_np(self) -> np.array:
+        r = self._dropoff
+        return np.array([r[0], r[1]])
 
-    def move_position(self, idx, movePos: ()):
-        # is used in robots method move()
-        # check if possible to move the pickup
-        if self._type == ObjectiveType.DROPOFF:
-            return False
+    def get_pickup_np(self) -> np.array:
+        r = self._pickup
+        return np.array([r[0], r[1]])
 
-        # check if pickup pieces are in reach
-        for occupied in self._positions:
-            # TODO: atm only works with 2 pickups
-            if occupied[0] == movePos[0] and occupied[1] == movePos[1]:
-                return False  # pickup would be moved onto another pickup spot
+    def pickup_move(self, new_pos):
+        if self._delivered:
+            return
 
-            if abs(occupied[0] - movePos[0]) > 1 or abs(occupied[1] - movePos[1]) > 1:
-                return False  # x,y-coordinate is too far apart
+        self._pickup = new_pos
 
-        # check if all pickup objects are occupied
-        if self.occupant < len(self._positions) and self._positions[idx] != movePos:
-            # we want to move but not enough occupants
-            return False
+        if self._pickup == self._dropoff:
+            self._delivered = True
 
-        self._positions[idx] = movePos
-        return True
+    def is_delivered(self):
+        return self._delivered
+
+    def delivery_reward(self):
+        if not self._delivered:
+            return 0
+
+        reward = self._delivery_reward  # just once, then remove it
+        self._delivery_reward = 0
+        return reward
 
 
 def generate_objective(pickuplist, dropofflist):
     # create new pickup and dropoff point
-    # return self.generate_random_point(pickupX, pickupY), self.generate_random_point(dropoffX, dropoffY)
     pickup = Objectives(ObjectiveType.PICKUP)
     dropoff = Objectives(ObjectiveType.DROPOFF)
 
@@ -90,3 +87,10 @@ def generate_random_point(self, x, y) -> np.array:
         y = math.floor((self.height - 1) * random.uniform(0.0, 1.0))
 
     return np.array([x, y])
+
+
+if __name__ == "__main__":
+    obj = Objectives((0, 0), (1, 1))
+    obj.pickup_move((1, 1))
+
+    print(obj.is_delivered())

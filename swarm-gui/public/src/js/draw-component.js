@@ -21,14 +21,36 @@ function agent_job(command) {
 function objective_job(positions) {
   // we only draw pickups
 
-  pickups[0].display(positions);
+  pickups[0].display([positions]);
   dropoffs[0].display({});
+}
+
+function obstacle_job(board, scaledX, scaledY) {
+  for (let y = 0; y < board.length; y++) {
+    row = board[y];
+
+    let placeholderX = 0
+    // char by char
+    for (let x = 0; x < row.length; x++) {
+      let char = row[x];
+
+      if (char != '#') {
+        if(char === 'P' || char === 'D'){
+          placeholderX++
+          continue
+        }
+        // console.log((x - placeholderX) * scaledX)
+        rect((x - placeholderX) * scaledX, y * scaledY, 20, 20);
+      }
+    }
+  }
 }
 
 function defaultDisplay() {
   for (i = 0; i < robots.length; i++) {
     robots[i].display();
   }
+  obstacle_job();
   objective_job();
 }
 
@@ -59,44 +81,43 @@ class Target {
 
     if (typeof opts === "undefined" || Object.entries(opts).length === 0) {
       // display dropoff
-      this.pos.forEach((  value, i) => {
-        if (i > 0){
-          this.display_connection(value, prev)
+      this.pos.forEach((value, i) => {
+        if (i > 0) {
+          this.display_connection(value, prev);
           this.display_single(prev);
         }
-        prev = value
+        prev = value;
       });
       this.display_single(prev);
       return;
     }
     opts.forEach((value, i) => {
-
-      if (i > 0){
-        this.display_connection(value, prev)
+      if (i > 0) {
+        this.display_connection(value, prev);
         this.display_single(prev);
       }
-      prev = value
+      prev = value;
     });
 
     this.display_single(prev);
   }
 
-  display_connection(value, prev){
+  display_connection(value, prev) {
     stroke(this.fill);
     strokeWeight(7);
     line(
-      value[0] * this.canvasSpeedX + this.offsetX + this.size * 0.5 ,
-      value[1] * this.canvasSpeedY + this.offsetY - this.size * 0.4,
-      prev[0] * this.canvasSpeedX + this.offsetX + this.size * 0.5,
-      prev[1] * this.canvasSpeedY + this.offsetY - this.size * 0.4
+      value[1] * this.canvasSpeedX + this.offsetX + this.size * 0.5,
+      value[0] * this.canvasSpeedY + this.offsetY - this.size * 0.4,
+      prev[1] * this.canvasSpeedX + this.offsetX + this.size * 0.5,
+      prev[0] * this.canvasSpeedY + this.offsetY - this.size * 0.4
     );
     stroke(0);
     strokeWeight(1);
   }
 
   display_single(opts) {
-    let posX = opts[0] * this.canvasSpeedX;
-    let posY = opts[1] * this.canvasSpeedY;
+    let posX = opts[1] * this.canvasSpeedX;
+    let posY = opts[0] * this.canvasSpeedY;
 
     fill(this.fill);
     rect(posX, posY, this.size, this.size);
@@ -120,9 +141,9 @@ class Robot {
     this.agent = agent; // fill color; yellow if agent, white otherwise
   }
 
-  move(x, y) {
-    this.x = x * this.canvasSpeedX;
-    this.y = y * this.canvasSpeedY;
+  move(y, x) {
+    this.x = x * this.canvasSpeedX + (this.diameter*0.5);
+    this.y = y * this.canvasSpeedY + (this.diameter*0.5);
   }
 
   setInterpolation(x, y) {

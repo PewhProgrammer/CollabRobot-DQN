@@ -8,17 +8,21 @@ import random
 import math
 
 
-def make_agent(width=100, height=100, diameter=20, speed=1):
-    x, y = calculate_random_pos(width, height)
-    return RobotAgent(x, y, width, height, diameter, speed)
+def make_agent(id, grid, width=100, height=100, diameter=20, speed=1):
+    x, y = calculate_random_pos(width, height, grid)
+    return RobotAgent(id, x, y, width, height, diameter, speed)
 
 
-def make_dummy(width=100, height=100, diameter=20, speed=1):
-    x, y = calculate_random_pos(width, height)
+def make_dummy(grid, width=100, height=100, diameter=20, speed=1):
+    x, y = calculate_random_pos(width, height, grid)
     return RobotDummy(x, y, width, height, diameter, speed)
 
 
-def calculate_random_pos(width, height):
-    x = math.floor((width - 1) * random.uniform(0.0, 1.0))
-    y = math.floor((height - 1) * random.uniform(0.0, 1.0))
+def calculate_random_pos(width, height, grid):
+    while True:
+        x = math.floor((width - 1) * random.uniform(0.0, 1.0))
+        y = math.floor((height - 1) * random.uniform(0.0, 1.0))
+        if grid.check_occupancy_free(x, y):
+            break
+
     return x, y

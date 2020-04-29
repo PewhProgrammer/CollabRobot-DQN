@@ -23,7 +23,7 @@ class Movement(Enum):
 class Robot(object):
 
     # The class "constructor" - It's actually an initializer 
-    def __init__(self, posX, posY, width, height, diameter, speed):
+    def __init__(self, id, posX, posY, width, height, diameter, speed):
         self.posX = posX
         self.posY = posY
         self.diam = diameter
@@ -31,7 +31,7 @@ class Robot(object):
         self.width = width
         self.height = height
         self.rewarded = False
-        self.pickupObj = (-1, None)
+        self.id = id
 
     def wait(self):
         return
@@ -87,33 +87,15 @@ class Robot(object):
         else:
             self.options[Movement(action)](self)
 
-        if self.pickupObj[1] is not None:
-            # i am a carrier
-            idx = self.pickupObj[0]
-            success = self.pickupObj[1].move_position(idx, self.get_position())
-
-            # if pickup got detached
-            if not success:
-                self.pickupObj[1].decrease_occupant()
-                self.pickupObj = (0, None)
-
         return self.get_position()
 
-    def has_pickup(self):
-        return self.pickupObj[1] is not None
-
     def get_position(self):
-        return self.posX, self.posY
-
-    def set_pickup(self, idx, obj):
-        if not self.has_pickup():
-            self.pickupObj = (idx, obj)
-            obj.increase_occupant()
+        return self.posY, self.posX
 
     def reset(self):
         self.posX = random.randint(0, self.width - 1)
         self.posY = random.randint(0, self.height - 1)
-        self.pickupObj = (0, None)
+        self.rewarded = False
 
 
 def get_sample_movement():

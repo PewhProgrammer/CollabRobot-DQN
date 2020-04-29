@@ -42,7 +42,8 @@ function createStatistics(payload) {
         yAxes: [
           {
             ticks: {
-              maxTicksLimit: 5
+              maxTicksLimit: 5,
+              beginAtZero: true
             },
             gridLines: {
               color: "rgba(0, 0, 0, .125)"
