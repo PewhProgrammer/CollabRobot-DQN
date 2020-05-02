@@ -19,20 +19,18 @@ function setup() {
 
   document.getElementById("log-file").onchange = function() {
     const file = this.files[0];
-    const reader = new FileReader();
-
-    var CHUNK_SIZE = 1024;
-    var offset = 0;
 
     // display file name on input field
     $(`#log-file-label`).html(file.name);
 
-    var navigator = new LineNavigator(file);
-
-    let indexToStartWith = 0;
+    var navigator = new FileNavigator(file);
 
     let countLines = 0;
 
+    let table = $("<tbody>");
+
+    // === Reading all lines ===
+    var indexToStartWith = 0;
     navigator.readSomeLines(indexToStartWith, function linesReadHandler(
       err,
       index,
@@ -40,45 +38,17 @@ function setup() {
       isEof,
       progress
     ) {
-      countLines += lines.length;
+      // Error happened
+      if (err) throw err;
 
-      // End of file
-      if (isEof) {
-        console.log(countLines);
-        return;
-      }
-
-      // Reading next chunk, adding number of lines read to first line in current chunk
-      navigator.readSomeLines(index + lines.length, linesReadHandler);
-    });
-
-    reader.onload = function(progressEvent) {
-      // construct data Table
-      // let table = $("<tbody>");
-
-      var view = new Uint8Array(reader.result);
-      for (var i = 0; i < view.length; ++i) {
-        if (view[i] === 10 || view[i] === 13) {
-          // \n = 10 and \r = 13
-          // column length = offset + position of \r or \n
-          callback(offset + i);
-          return;
-        }
-      }
-
-      // \r or \n not found, continue seeking.
-      offset += CHUNK_SIZE;
-      seek();
-
-      /* // By lines
-      var lines = this.result.split("\n");
-      for (var line = 0; line < lines.length; line++) {
-        str = lines[line];
-        // console.log(str);
+      // Reading lines
+      for (var i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        // Do something with line
 
         if (str != "") {
           // console.log(lines[line])
-          let payload = JSON.parse(lines[line]);
+          let payload = JSON.parse(line);
           // data a new table row
           // table.append($("<tr>"));
           let tr = $("<tr>");
@@ -96,51 +66,38 @@ function setup() {
 
           data.push(payload);
         }
-      } */
+      }
 
-      /*
-      createStatistics(data);
+      countLines += lines.length;
 
-      init_new_grid(data[0]);
+      // progress is a position of the last read line as % from whole file length
 
-      $("#dataTable").append(table);
+      // End of file
+      if (isEof) {
+        console.log(countLines);
 
-      $("#dataTable").DataTable();
+        createStatistics(data);
 
-      $("#dataTable tbody").on("click", "tr", function(e) {
-        episode = $(this)
-          .children("th:first")
-          .text();
-        move = 0;
-        init_new_grid(data[episode]);
-        e.stopPropagation();
-      });
-      */
-    };
-<<<<<<< HEAD
+        init_new_grid(data[0]);
 
-    reader.onerror = function() {
-      // Cannot read file... Do something, e.g. assume column size = 0.
-      callback(0);
-    };
-    // seek();
+        $("#dataTable").append(table);
 
-    function seek() {
-      if (offset >= file.size) {
-        // No \r or \n found. The column size is equal to the full
-        // file size
-        callback(file.size);
+        $("#dataTable").DataTable();
+
+        $("#dataTable tbody").on("click", "tr", function(e) {
+          episode = $(this)
+            .children("th:first")
+            .text();
+          move = 0;
+          init_new_grid(data[episode]);
+          e.stopPropagation();
+        });
         return;
       }
-      var slice = file.slice(offset, offset + CHUNK_SIZE);
-      reader.readAsArrayBuffer(slice);
-    }
 
-    // reader.readAsText(file);
-=======
-    reader.readAsText(file);
-    //reader.readAsArrayBuffer(file)
->>>>>>> 59f8e705ca6bacd054bdf3aea9f92a01b13dd1ae
+      // Reading next chunk, adding number of lines read to first line in current chunk
+      navigator.readSomeLines(index + lines.length, linesReadHandler);
+    });
   };
 
   document.getElementById("map-file").onchange = function() {
