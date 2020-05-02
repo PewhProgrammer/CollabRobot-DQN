@@ -7,7 +7,7 @@ let game_epoch = 1;
 let pickups = [];
 let dropoffs = [];
 const data = [];
-let board = [[]]
+let board = [[]];
 
 let stop = false;
 
@@ -21,14 +21,56 @@ function setup() {
     const file = this.files[0];
     const reader = new FileReader();
 
+    var CHUNK_SIZE = 1024;
+    var offset = 0;
+
+    // display file name on input field
+    $(`#log-file-label`).html(file.name);
+
+    var navigator = new LineNavigator(file);
+
+    let indexToStartWith = 0;
+
+    let countLines = 0;
+
+    navigator.readSomeLines(indexToStartWith, function linesReadHandler(
+      err,
+      index,
+      lines,
+      isEof,
+      progress
+    ) {
+      countLines += lines.length;
+
+      // End of file
+      if (isEof) {
+        console.log(countLines);
+        return;
+      }
+
+      // Reading next chunk, adding number of lines read to first line in current chunk
+      navigator.readSomeLines(index + lines.length, linesReadHandler);
+    });
+
     reader.onload = function(progressEvent) {
-      // display file name on input field
-      $(`#log-file-label`).html(file.name);
-
       // construct data Table
-      let table = $("<tbody>");
+      // let table = $("<tbody>");
 
-      // By lines
+      var view = new Uint8Array(reader.result);
+      for (var i = 0; i < view.length; ++i) {
+        if (view[i] === 10 || view[i] === 13) {
+          // \n = 10 and \r = 13
+          // column length = offset + position of \r or \n
+          callback(offset + i);
+          return;
+        }
+      }
+
+      // \r or \n not found, continue seeking.
+      offset += CHUNK_SIZE;
+      seek();
+
+      /* // By lines
       var lines = this.result.split("\n");
       for (var line = 0; line < lines.length; line++) {
         str = lines[line];
@@ -54,8 +96,9 @@ function setup() {
 
           data.push(payload);
         }
-      }
+      } */
 
+      /*
       createStatistics(data);
 
       init_new_grid(data[0]);
@@ -72,8 +115,27 @@ function setup() {
         init_new_grid(data[episode]);
         e.stopPropagation();
       });
+      */
     };
-    reader.readAsText(file);
+
+    reader.onerror = function() {
+      // Cannot read file... Do something, e.g. assume column size = 0.
+      callback(0);
+    };
+    // seek();
+
+    function seek() {
+      if (offset >= file.size) {
+        // No \r or \n found. The column size is equal to the full
+        // file size
+        callback(file.size);
+        return;
+      }
+      var slice = file.slice(offset, offset + CHUNK_SIZE);
+      reader.readAsArrayBuffer(slice);
+    }
+
+    // reader.readAsText(file);
   };
 
   document.getElementById("map-file").onchange = function() {
@@ -87,15 +149,15 @@ function setup() {
       var lines = this.result.split("\n");
       for (let line = 0; line < lines.length; line++) {
         str = lines[line];
-        
+
         board[line] = str.split("");
       }
 
       // display everything
       $(".data-ready")
-      .css("visibility", "visible")
-      .hide()
-      .fadeIn("slow");
+        .css("visibility", "visible")
+        .hide()
+        .fadeIn("slow");
     };
     reader.readAsText(file);
   };
@@ -149,7 +211,7 @@ function draw() {
   }
 
   // update
-  obstacle_job(board,adjustedX, adjustedY);
+  obstacle_job(board, adjustedX, adjustedY);
   objective_job(c.locations.pickup);
   agent_job(c.locations.agents);
 }
@@ -181,7 +243,6 @@ function init_new_grid(board) {
   adjustedX = canvas_width * (1 / map_width);
   adjustedY = canvas_height * (1 / map_height);
 
-
   create_objectives(board.start_locations);
   create_agents(board.start_locations.agents);
 
@@ -199,7 +260,7 @@ function create_objectives(board) {
 
 function fill_objective(target_single, fill, letter) {
   t = null;
-  target = [target_single]
+  target = [target_single];
 
   target.forEach(function(value, i) {
     if (i == 0) {
