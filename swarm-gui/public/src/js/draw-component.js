@@ -152,7 +152,7 @@ class Robot {
   }
 
   display() {
-    if (this.agent) fill(255);
+    if (this.agent) fill(0);
     else fill(155, 155, 155);
     // check if border has been reached and reset
     ellipse(this.x, this.y, this.diameter, this.diameter);

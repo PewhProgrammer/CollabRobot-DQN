@@ -117,6 +117,7 @@ function setup() {
       });
       */
     };
+<<<<<<< HEAD
 
     reader.onerror = function() {
       // Cannot read file... Do something, e.g. assume column size = 0.
@@ -136,6 +137,10 @@ function setup() {
     }
 
     // reader.readAsText(file);
+=======
+    reader.readAsText(file);
+    //reader.readAsArrayBuffer(file)
+>>>>>>> 59f8e705ca6bacd054bdf3aea9f92a01b13dd1ae
   };
 
   document.getElementById("map-file").onchange = function() {
@@ -250,7 +255,7 @@ function init_new_grid(board) {
   x.innerHTML = `Episode: ${board.episode}`;
 
   x = document.getElementsByClassName("reward")[0];
-  x.innerHTML = `Reward: ${board.acc_rewards}`;
+  x.innerHTML = `Reward: ${board.acc_rewards[0]}`;
 }
 
 function create_objectives(board) {
