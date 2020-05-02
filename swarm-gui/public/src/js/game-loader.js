@@ -74,6 +74,7 @@ function setup() {
       });
     };
     reader.readAsText(file);
+    //reader.readAsArrayBuffer(file)
   };
 
   document.getElementById("map-file").onchange = function() {
@@ -189,7 +190,7 @@ function init_new_grid(board) {
   x.innerHTML = `Episode: ${board.episode}`;
 
   x = document.getElementsByClassName("reward")[0];
-  x.innerHTML = `Reward: ${board.acc_rewards}`;
+  x.innerHTML = `Reward: ${board.acc_rewards[0]}`;
 }
 
 function create_objectives(board) {

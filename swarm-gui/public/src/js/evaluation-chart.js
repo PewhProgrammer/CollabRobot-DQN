@@ -59,7 +59,7 @@ function createStatistics(payload) {
 
   for (var key in payload) {
     if (payload.hasOwnProperty(key)) {
-      addData(myLineChart, payload[key].episode, payload[key].acc_rewards);
+      addData(myLineChart, payload[key].episode, payload[key].acc_rewards[0]);
     }
   }
 }
