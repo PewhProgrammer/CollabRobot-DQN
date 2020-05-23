@@ -16,6 +16,7 @@ def game_loop(envW, sio=None, params=None):
     step = 0
 
     dqn_agents = [DQN(env=envW, params=params)]
+    overall_steps = 0
 
     for trial in range(trials):
         envW.reset(trial)
@@ -23,6 +24,7 @@ def game_loop(envW, sio=None, params=None):
         acc_rewards = {0: 0, 1: 0}
         logger.save_init(envW.get_env())
         for step in range(trial_len):
+            overall_steps += 1
             identifier = "E" + str(envW.get_env().episode) + "_S" + str(step)
             for i, dqn_agent in enumerate(dqn_agents):  # Iterate over all agents
                 cur_state = states[i]
@@ -61,6 +63,8 @@ def game_loop(envW, sio=None, params=None):
     print('Finished Training Session. Saving model and weights')
     trial = 'omega'
     dqn_agents[0].save_model("trial-{}.model".format(trial))
+
+    print('Overall timesteps: {}').format(overall_steps)
 
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # print(tf.reduce_sum(tf.random.normal([1000, 1000])))

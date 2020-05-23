@@ -1,37 +1,79 @@
 """Startup module
 """
 
-import sys
 import config
 from logic.trainer import game_loop
 from containers.env_wrapper import EnvWrapper
+from containers.gym_wrapper import CustomEnv
+from containers.multi_agent_gym_wrapper import MultiAgentCustomEnv
 
+from stable_baselines.deepq.policies import MlpPolicy
+from stable_baselines import DQN
+
+import io_functions.game_logger as logger
 import talos
 
 
-def apply_study():
-    x, y = talos.templates.datasets.iris()
+def baseline():
+    # train_single("models/single_dqn_transport", 15000)
+    train_multiple("models/tmp_multi_agent_model", 80000)
 
-    def dqn(x_train, y_train, x_val, y_val, params):
-        # create evironment
-        envWrap = EnvWrapper(config.map_5x5)
-        return game_loop(envWrap, params=params)
+    model_trained = DQN.load("models/single_dqn_transport", env=CustomEnv(config.small_room_single))
+    gym_wrapper = MultiAgentCustomEnv(config.small_room_p2_multiple, model_trained)
 
-    # NOTE: clear session prevents using too much memory, save_weights does not save each model, can also save memory
-    scan_object = talos.Scan(x, y, model=dqn, params=config.talos_params, experiment_name='study',
-                             fraction_limit=0.5, clear_session=True, save_weights=False)
-    return scan_object
+    test_phase(
+        gym_wrapper,
+        DQN.load("models/tmp_multi_agent_model", env=gym_wrapper))
+
+
+def train_single(model_name, total_timesteps):
+    gym_wrapper = CustomEnv(config.small_room_single)
+    model = DQN(MlpPolicy, gym_wrapper, verbose=1)
+    model.learn(total_timesteps=total_timesteps)
+    model.save(model_name)
+
+
+def train_multiple(model_name, total_timesteps):
+    gym_wrapper = CustomEnv(config.small_room_single)
+    model_trained = DQN.load("models/single_dqn_transport", env=gym_wrapper)
+    gym_wrapper = MultiAgentCustomEnv(config.small_room_p2_multiple, model_trained)
+    model = DQN(MlpPolicy, gym_wrapper, verbose=1)
+    model.learn(total_timesteps=total_timesteps)
+    model.save(model_name)
+
+    del model  # remove to demonstrate saving and loading
+
+def test_phase(gym_wrapper, model):
+    step = 0
+    episode = 0
+    acc_rewards = 0
+
+    logger.save_init(gym_wrapper.get_env())
+    obs = gym_wrapper.reset()
+
+    while episode < 25:
+
+        step += 1
+        action, _states = model.predict(obs)
+        obs, rewards, dones, info = gym_wrapper.step(action)
+        acc_rewards += rewards
+
+        logger.save_state(gym_wrapper.get_env(), "E" + str(episode) + "_S" + str(step))
+        if dones:
+            print("[E-{}] Accumulated rewards: {}".format(episode, acc_rewards))
+            logger.save_end(gym_wrapper.get_env(), acc_rewards)
+            logger.save_init(gym_wrapper.get_env())
+            gym_wrapper.reset()
+            step = 0
+            episode += 1
+            acc_rewards = 0
 
 
 def main(args):
     # create evironment
-    envWrap = EnvWrapper(config.sample_easy)
-
+    envWrap = EnvWrapper(config.small_room)
     # apply_study()
-
-    # sio_context = init_flask_app(envWrap)
     game_loop(envWrap, params=config.default)
-    # sio_context.sleep(5)
 
 
 def parse_arguments(argv):
@@ -68,5 +110,20 @@ def parse_arguments(argv):
     return argv
 
 
+def apply_study():
+    x, y = talos.templates.datasets.iris()
+
+    def dqn(x_train, y_train, x_val, y_val, params):
+        # create evironment
+        envWrap = EnvWrapper(config.map_5x5)
+        return game_loop(envWrap, params=params)
+
+    # NOTE: clear session prevents using too much memory, save_weights does not save each model, can also save memory
+    scan_object = talos.Scan(x, y, model=dqn, params=config.talos_params, experiment_name='study',
+                             fraction_limit=0.5, clear_session=True, save_weights=False)
+    return scan_object
+
+
 if __name__ == '__main__':
-    main(parse_arguments(sys.argv[1:]))
+    # main(parse_arguments(sys.argv[1:]))
+    baseline()

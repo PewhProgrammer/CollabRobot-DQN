@@ -40,10 +40,42 @@ map_5x5 = {
 sample_easy = {
     "id": 2,
     "width": 31,
-    "height": 17,
+    "height": 11,
     "map": "maps/sample_easy.map",
     "agents": 1,
     "dummies": 0,
     "connected_objectives": [(1, 2)],
     "observation_space": 7
 }
+
+small_room_single = {
+    "id": 3,
+    "width": 10,
+    "height": 6,
+    "map": "maps/small_room.map",
+    "agents": 1,
+    "dummies": 0,
+    "observation_space": 7
+}
+
+small_room_p2_multiple = {
+    "id": 3,
+    "width": 10,
+    "height": 6,
+    "map": "maps/small_room_p2.map",
+    "agents": 2,
+    "dummies": 0,
+    "observation_space": 9
+}
+
+test_obj_manager_room = {
+    "id": 3,
+    "width": 4,
+    "height": 4,
+    "map": "../maps/test_obj_manager_room.map",
+    "agents": 1,
+    "dummies": 0,
+    "observation_space": 7
+}
+
+

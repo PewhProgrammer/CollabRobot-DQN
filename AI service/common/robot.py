@@ -14,10 +14,7 @@ class Movement(Enum):
     SOUTH = 2
     EAST = 3
     WEST = 4
-    NORTH_WEST = 5
-    NORTH_EAST = 6
-    SOUTH_WEST = 7
-    SOUTH_EAST = 8
+    GRASP = 5
 
 
 class Robot(object):
@@ -32,8 +29,12 @@ class Robot(object):
         self.height = height
         self.rewarded = False
         self.id = id
+        self.oldPos = (posY, posX)
 
     def wait(self):
+        return
+
+    def grasp(self):
         return
 
     def north(self):
@@ -75,19 +76,27 @@ class Robot(object):
         Movement.SOUTH: south,
         Movement.EAST: east,
         Movement.WEST: west,
-        Movement.NORTH_WEST: north_west,
-        Movement.NORTH_EAST: north_east,
-        Movement.SOUTH_WEST: south_west,
-        Movement.SOUTH_EAST: south_east
+        Movement.GRASP: grasp
     }
 
     def move(self, action):
+        self.oldPos = self.get_position()
         if isinstance(action, Movement):
             self.options[action](self)
         else:
             self.options[Movement(action)](self)
 
         return self.get_position()
+
+    def get_latest_move_diff(self):
+        newPos = self.get_position()
+        ydiff = newPos[0] - self.oldPos[0]
+        xdiff = newPos[1] - self.oldPos[1]
+        return ydiff, xdiff
+
+
+    def get_id(self):
+        return self.id
 
     def get_position(self):
         return self.posY, self.posX
@@ -99,4 +108,4 @@ class Robot(object):
 
 
 def get_sample_movement():
-    return Movement(random.randint(0, 8))
+    return Movement(random.randint(0, 5))

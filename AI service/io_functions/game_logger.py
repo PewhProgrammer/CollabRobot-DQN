@@ -41,7 +41,7 @@ def save_end(env, acc_rewards):
     result = {**result, **payload}
 
     logger.info(util.export_dict_to_string(result))  # save into file
-    print("Accumulated rewards: {}".format(result["acc_rewards"]))
+    # print("Accumulated rewards: {}".format(result["acc_rewards"]))
 
     # reset containers
     start = {}

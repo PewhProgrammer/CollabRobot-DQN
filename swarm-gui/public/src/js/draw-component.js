@@ -1,5 +1,5 @@
-const canvas_width = 500;
-const canvas_height = 500;
+const canvas_width = 700;
+let canvas_height = 500;
 let map_width;
 let map_height;
 
@@ -29,18 +29,22 @@ function obstacle_job(board, scaledX, scaledY) {
   for (let y = 0; y < board.length; y++) {
     row = board[y];
 
-    let placeholderX = 0
+    let placeholderX = 0;
     // char by char
     for (let x = 0; x < row.length; x++) {
       let char = row[x];
 
-      if (char != '#') {
-        if(char === 'P' || char === 'D'){
-          placeholderX++
-          continue
+      if (char != "#") {
+        if (char === "P") {
+          placeholderX++;
+          continue;
         }
         // console.log((x - placeholderX) * scaledX)
-        rect((x - placeholderX) * scaledX, y * scaledY, 20, 20);
+        fill(255);
+        rect((x - placeholderX) * scaledX, y * scaledY, scaledX, scaledY);
+      } else {
+        fill(0);
+        rect((x - placeholderX) * scaledX, y * scaledY, scaledX, scaledY);
       }
     }
   }
@@ -65,15 +69,15 @@ function displayLine() {
 
 // Target class
 class Target {
-  constructor(pos, x2, y2, color, letter) {
+  constructor(pos, x2, y2, color, letter, scale) {
     this.pos = [pos];
     this.fill = color;
     this.letter = letter;
     this.canvasSpeedX = x2;
     this.canvasSpeedY = y2;
-    this.offsetY = 18;
-    this.offsetX = 4;
-    this.size = 20;
+    this.offsetY = scale * 0.75;
+    this.offsetX = scale * 0.25;
+    this.size = scale;
   }
 
   display(opts) {
@@ -119,10 +123,11 @@ class Target {
     let posX = opts[1] * this.canvasSpeedX;
     let posY = opts[0] * this.canvasSpeedY;
 
+
     fill(this.fill);
     rect(posX, posY, this.size, this.size);
     fill(0);
-    textSize(20);
+    textSize(30);
     text(this.letter, posX + this.offsetX, posY + this.offsetY);
   }
 
@@ -142,8 +147,8 @@ class Robot {
   }
 
   move(y, x) {
-    this.x = x * this.canvasSpeedX + (this.diameter*0.5);
-    this.y = y * this.canvasSpeedY + (this.diameter*0.5);
+    this.x = x * this.canvasSpeedX + this.diameter * 0.5;
+    this.y = y * this.canvasSpeedY + this.diameter * 0.5;
   }
 
   setInterpolation(x, y) {
@@ -152,7 +157,7 @@ class Robot {
   }
 
   display() {
-    if (this.agent) fill(0);
+    if (this.agent) fill(93,24,179);
     else fill(155, 155, 155);
     // check if border has been reached and reset
     ellipse(this.x, this.y, this.diameter, this.diameter);

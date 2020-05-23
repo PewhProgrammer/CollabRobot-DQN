@@ -5,8 +5,10 @@ def load_map(filepath, width, height):
     grid = [[[] for x in range(width)] for y in range(height)]
 
     objectives = {}
-    obj_storage = [[] for x in range(10)]
+    obj_storage = {}
+    pickups = 0
 
+    # only obstacles will be loaded
     with open(filepath) as f:
         for i in range(height):
             for j in range(width):
@@ -15,23 +17,25 @@ def load_map(filepath, width, height):
                 if '\n' in c:
                     c = f.read(1)
 
-                if 'P' in c or 'D' in c:
-                    id = f.read(1)
-                    c += id
-                    num = int(id)
-                    if len(obj_storage[num]) > 0:
-                        # there already exists a the partner dropoff object
-                        if 'P' in c:
-                            objectives[num] = (Objectives((i, j), obj_storage[num]))
-                        else:
-                            objectives[num] = (Objectives(obj_storage[num], (i, j)))
-                    else:
-                        obj_storage[num] = (i, j)
+                if 'D' in c:
+                    obj_storage["dropoff"] = (i, j)
+
+                if 'P' in c:
+                    weight = f.read(1)
+                    c += str(pickups)
+                    obj_storage[pickups] = (i, j, int(weight))
+                    pickups += 1
 
                 if '.' in c or '-' in c:
                     continue
 
-                grid[i][j] = [c]
+                if '#' in c:
+                    grid[i][j] = [c]
+
+        for i in range(pickups):
+            if "dropoff" in obj_storage:
+                y, x, weight = obj_storage[i]
+                objectives[i] = (Objectives((y, x), obj_storage["dropoff"], weight))
 
         # print("End of file")
 

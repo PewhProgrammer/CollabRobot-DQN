@@ -21,7 +21,7 @@ class EnvWrapper(gym.Env):
         self.env_size = (config["width"], config["height"])
 
         # all movements + wait action
-        self.action_space = spaces.Discrete(4 * len(self.env_size) + 1)
+        self.action_space = spaces.Discrete(2 * len(self.env_size) + 2)
 
         # observation is the x, y coordinate of the grid
         low = np.zeros(len(self.env_size), dtype=int)
@@ -44,6 +44,7 @@ class EnvWrapper(gym.Env):
 
     def step(self, action, rID):
         self.env.move_robots(action, rID)
+        self.env.update_grid()
         self.env.move_objectives(rID)
         self.env.update_grid()
         reward, done = self.env.requirements.validate(self.env, self.env.robots[rID], action)  # check if pickup and dropoff is successful

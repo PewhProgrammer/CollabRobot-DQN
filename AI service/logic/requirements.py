@@ -35,7 +35,7 @@ class Requirements(object):
         result = 0, False
         # checks if the agent receives the carrier or not
         if agent.id in obj_manager.get_robot_objective_dict():
-            result = 0 if agent.rewarded else 10, True  # return reward of 10 if not rewarded before
+            result = 0 if agent.rewarded else 5, True  # return reward of 10 if not rewarded before
             agent.rewarded = True
         return result
 
@@ -47,11 +47,10 @@ class Requirements(object):
         return 0, False
 
     def punish(self, agent, actionID):
-        punishment = 0  # default punishment
+        punishment = -0.25  # default punishment
 
-        # if action is wait, punish twice as much
         if actionID == 0:
-            punishment = -0.1
+            punishment -= 0.2
 
         return punishment  # / (env_size[0] * env_size[1])
 

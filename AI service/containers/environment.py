@@ -1,7 +1,5 @@
 """Object class for robot creation and manipulation. Board Model
 """
-# 11 DIFFERENT ACTION in ACTION SPACE
-# VERTICAL, HORIZONTAL, DIAGONAL MOVEMENT + PICKUP + DROPOFF
 
 import math
 import random
@@ -18,6 +16,7 @@ from io_functions.map_reader import load_map
 
 
 class Environment(object):
+    """MODEL: Environment describing global state information"""
 
     # The class "constructor" - It's actually an initializer
     def __init__(self, config=None):
@@ -43,12 +42,15 @@ class Environment(object):
         self.grid.update(self.robots, self.objective_manager)
 
     def move_objectives(self, rID):  # if necessary
-        self.objective_manager.move_position(self.robots[rID])
+        self.objective_manager.perform_action(self.robots[0], self.grid)
 
     def move_robots(self, action, rID):
-        # move the agent with the action and move the dummys with random action
-        self.last_action = int(action)
-        self.robots[rID].move(action)
+        # move the agent with the action
+        actionID = int(action)
+        if actionID == 5:  # robot is grasping; check for objectives in close proximity
+            self.objective_manager.check_grasping_objective(self.robots[rID])
+        self.last_action = actionID
+        self.robots[rID].move(actionID)
 
     def robot_position(self, rID) -> np.array:
         r = self.robots[rID].get_position()
@@ -76,7 +78,7 @@ class Environment(object):
 
         loaded_map, objective_list = load_map(self.config["map"], self.width, self.height)
         self.grid = Grid(loaded_map, self.config)
-        self.objective_manager = Objective_Manager(objective_list, self.config["connected_objectives"])
+        self.objective_manager = Objective_Manager(objective_list)
         self.requirements = Requirements(self.grid)
 
         self.robots = {}

@@ -46,7 +46,7 @@ function setup() {
         const line = lines[i];
         // Do something with line
 
-        if (str != "") {
+        if (line != "") {
           // console.log(lines[line])
           let payload = JSON.parse(line);
           // data a new table row
@@ -162,6 +162,8 @@ function draw() {
 
   background(0, 102, 102);
   fill(255);
+  strokeWeight(2);
+  stroke(155,155,155);
   //displayLine();
 
   // TODO: parse the commands
@@ -174,6 +176,8 @@ function draw() {
 
   // update
   obstacle_job(board, adjustedX, adjustedY);
+
+  noStroke()
   objective_job(c.locations.pickup);
   agent_job(c.locations.agents);
 }
@@ -192,7 +196,7 @@ function get_Command() {
     if (Object.keys(episode_container.games).length <= move) {
       move = 0;
       episode++;
-      init_new_grid(episode_container);
+      init_new_grid(data[episode]);
     }
   }
 }
@@ -201,6 +205,12 @@ function init_new_grid(board) {
   map_width = board.width;
   map_height = board.height;
   agents = board.agents;
+
+  ratio = map_height / map_width;
+  canvas_height = canvas_width * ratio
+
+  cv = createCanvas(canvas_width, canvas_height);
+  cv.parent("sketch-holder");
 
   adjustedX = canvas_width * (1 / map_width);
   adjustedY = canvas_height * (1 / map_height);
@@ -213,20 +223,21 @@ function init_new_grid(board) {
 
   x = document.getElementsByClassName("reward")[0];
   x.innerHTML = `Reward: ${board.acc_rewards[0]}`;
+  
 }
 
 function create_objectives(board) {
-  pickups.push(fill_objective(board.pickup, "#CC6600", "P"));
-  dropoffs.push(fill_objective(board.dropoff, "#3CB371", "D"));
+  pickups.push(fill_objective(board.pickup, "#CC6600", "P", adjustedX));
+  dropoffs.push(fill_objective(board.dropoff, "#3CB371", "D", adjustedX));
 }
 
-function fill_objective(target_single, fill, letter) {
+function fill_objective(target_single, fill, letter, size) {
   t = null;
   target = [target_single];
 
   target.forEach(function(value, i) {
     if (i == 0) {
-      t = new Target(value, adjustedX, adjustedY, fill, letter);
+      t = new Target(value, adjustedX, adjustedY, fill, letter, size);
     } else {
       t.addPoints(value);
     }
@@ -240,7 +251,7 @@ function create_agents(agents) {
     if (agents.hasOwnProperty(key)) {
       pos = agents[key];
       agent = key == 0 ? true : false;
-      robot = new Robot(pos, 20, 1, agent);
+      robot = new Robot(pos, adjustedX, 1, agent);
       robot.setInterpolation(adjustedX, adjustedY);
       robots.push(robot);
     }

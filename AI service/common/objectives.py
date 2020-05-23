@@ -15,12 +15,35 @@ class ObjectiveType(Enum):
 
 class Objectives(object):
 
-    def __init__(self, p_pos, d_pos):
+    def __init__(self, p_pos, d_pos, weight):
         self._positions = []
         self._pickup = p_pos  # tuple (y,x)
         self._dropoff = d_pos
         self._delivered = False
-        self._delivery_reward = 30
+        self._delivery_reward = 15
+        self._weight = weight
+
+    # compute assumed position of pickup
+    def compute_new_pickup_pos(self, robot_move_diff):
+        if self._delivered:
+            return
+
+        # robot_move_diff is the difference from its previos position and its current position
+        robotYDiff, robotXDIff = robot_move_diff
+
+        # add the positions to the current position of the pickup object
+        newPickupY = self._pickup[0] + robotYDiff
+        newPickupX = self._pickup[1] + robotXDIff
+
+        return newPickupY, newPickupX
+
+    def delivery_reward(self):
+        if not self._delivered:
+            return 0
+
+        reward = self._delivery_reward  # just once, then remove it
+        self._delivery_reward = 0
+        return reward
 
     def add_point(self, x, y):
         self._positions.append((x, y))
@@ -45,11 +68,11 @@ class Objectives(object):
         r = self._pickup
         return np.array([r[0], r[1]])
 
-    def pickup_move(self, new_pos):
-        if self._delivered:
-            return
+    def get_pickup_pos(self):
+        return self._pickup
 
-        self._pickup = new_pos
+    def set_position(self, pos):
+        self._pickup = pos
 
         if self._pickup == self._dropoff:
             self._delivered = True
@@ -57,13 +80,8 @@ class Objectives(object):
     def is_delivered(self):
         return self._delivered
 
-    def delivery_reward(self):
-        if not self._delivered:
-            return 0
-
-        reward = self._delivery_reward  # just once, then remove it
-        self._delivery_reward = 0
-        return reward
+    def get_weight(self):
+        return self._weight
 
 
 def generate_objective(pickuplist, dropofflist):
@@ -91,6 +109,6 @@ def generate_random_point(self, x, y) -> np.array:
 
 if __name__ == "__main__":
     obj = Objectives((0, 0), (1, 1))
-    obj.pickup_move((1, 1))
+    obj.compute_new_pickup_pos((4, 11))
 
     print(obj.is_delivered())
