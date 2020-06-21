@@ -5,7 +5,6 @@
 
 import random
 from enum import Enum
-import numpy as np
 
 
 class Movement(Enum):
@@ -94,17 +93,22 @@ class Robot(object):
         xdiff = newPos[1] - self.oldPos[1]
         return ydiff, xdiff
 
-
     def get_id(self):
         return self.id
 
     def get_position(self):
         return self.posY, self.posX
 
+    def reset_position(self):
+        self.posX, self.posY = self.oldPos[1], self.oldPos[0]
+
     def reset(self):
         self.posX = random.randint(0, self.width - 1)
         self.posY = random.randint(0, self.height - 1)
         self.rewarded = False
+
+    def isDummy(self):
+        return False
 
 
 def get_sample_movement():

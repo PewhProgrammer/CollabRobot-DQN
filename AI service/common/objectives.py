@@ -20,7 +20,7 @@ class Objectives(object):
         self._pickup = p_pos  # tuple (y,x)
         self._dropoff = d_pos
         self._delivered = False
-        self._delivery_reward = 15
+        self._delivery_reward = 10
         self._weight = weight
 
     # compute assumed position of pickup
@@ -70,6 +70,9 @@ class Objectives(object):
 
     def get_pickup_pos(self):
         return self._pickup
+
+    def get_dropoff_pos(self):
+        return self._dropoff
 
     def set_position(self, pos):
         self._pickup = pos

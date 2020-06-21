@@ -47,7 +47,7 @@ class EnvWrapper(gym.Env):
         self.env.update_grid()
         self.env.move_objectives(rID)
         self.env.update_grid()
-        reward, done = self.env.requirements.validate(self.env, self.env.robots[rID], action)  # check if pickup and dropoff is successful
+        reward, done = self.env.reward_manager.observe(self.env, self.env.robots[rID], action)  # check if pickup and dropoff is successful
 
         # determine data for input layer
         state = self.input_data(rID)

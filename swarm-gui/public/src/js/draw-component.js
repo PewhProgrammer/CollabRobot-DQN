@@ -43,7 +43,7 @@ function obstacle_job(board, scaledX, scaledY) {
         fill(255);
         rect((x - placeholderX) * scaledX, y * scaledY, scaledX, scaledY);
       } else {
-        fill(0);
+        fill("#465453");
         rect((x - placeholderX) * scaledX, y * scaledY, scaledX, scaledY);
       }
     }
@@ -76,7 +76,7 @@ class Target {
     this.canvasSpeedX = x2;
     this.canvasSpeedY = y2;
     this.offsetY = scale * 0.75;
-    this.offsetX = scale * 0.25;
+    this.offsetX = scale * 0.15;
     this.size = scale;
   }
 
@@ -87,7 +87,6 @@ class Target {
       // display dropoff
       this.pos.forEach((value, i) => {
         if (i > 0) {
-          this.display_connection(value, prev);
           this.display_single(prev);
         }
         prev = value;
@@ -97,26 +96,15 @@ class Target {
     }
     opts.forEach((value, i) => {
       if (i > 0) {
-        this.display_connection(value, prev);
         this.display_single(prev);
       }
       prev = value;
     });
 
+    strokeWeight(4);
+    stroke(51);
     this.display_single(prev);
-  }
-
-  display_connection(value, prev) {
-    stroke(this.fill);
-    strokeWeight(7);
-    line(
-      value[1] * this.canvasSpeedX + this.offsetX + this.size * 0.5,
-      value[0] * this.canvasSpeedY + this.offsetY - this.size * 0.4,
-      prev[1] * this.canvasSpeedX + this.offsetX + this.size * 0.5,
-      prev[0] * this.canvasSpeedY + this.offsetY - this.size * 0.4
-    );
-    stroke(0);
-    strokeWeight(1);
+    noStroke();
   }
 
   display_single(opts) {
@@ -127,8 +115,11 @@ class Target {
     fill(this.fill);
     rect(posX, posY, this.size, this.size);
     fill(0);
-    textSize(30);
+    strokeWeight(4);
+    stroke(51);
+    textSize(40);
     text(this.letter, posX + this.offsetX, posY + this.offsetY);
+    noStroke();
   }
 
   addPoints(pos) {
@@ -138,10 +129,12 @@ class Target {
 
 // Robot class
 class Robot {
-  constructor(pos, diam = 10, speed = 1, agent = false) {
+  constructor(id, pos, diam = 6, speed = 1, agent = false) {
+    this.letter = id
     this.x = pos[0];
     this.y = pos[1];
     this.diameter = diam;
+    this.dia_scale = -6
     this.speed = speed;
     this.agent = agent; // fill color; yellow if agent, white otherwise
   }
@@ -157,10 +150,18 @@ class Robot {
   }
 
   display() {
-    if (this.agent) fill(93,24,179);
+    if (this.agent) fill("#cc3853");
     else fill(155, 155, 155);
     // check if border has been reached and reset
-    ellipse(this.x, this.y, this.diameter, this.diameter);
+    strokeWeight(4);
+    stroke(51);
+    ellipse(this.x, this.y, this.diameter + this.dia_scale , this.diameter + this.dia_scale);
+
+    fill(0);
+    textSize(30);
+    text(this.letter, this.x - 7, this.y + 12);
+    noStroke();
+
   }
 
   getPosition() {

@@ -1,6 +1,6 @@
 import os
 import logging
-import common.serializer as util
+import io_functions.serializer as util
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -31,9 +31,9 @@ def save_state(env, state_id):
     body.append(util.export_state(env, state_id))
 
 
-def save_end(env, acc_rewards):
+def save_end(env, acc_rewards, completed=False):
     global start, body
-    payload = util.export_end_state(env, acc_rewards)
+    payload = util.export_end_state(env, acc_rewards, completed)
     # print("Accumulated rewards: {}".format(acc_rewards))
 
     # merge every struct into result

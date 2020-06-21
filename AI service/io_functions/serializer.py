@@ -16,7 +16,7 @@ def export_state(env, state_id="NONE"):
     """
 
     x = {
-        "id" : str(state_id),
+        "id": str(state_id),
         "locations": {"pickup": list(env.objective_manager.pickup_get_positions_np()),
                       "agents": env.robot_positions()},
         "collisions": [],
@@ -26,15 +26,17 @@ def export_state(env, state_id="NONE"):
     return json.dumps(x, default=lambda o: o.__dict__, separators=(',', ':'))
 
 
-def export_end_state(env, r):
+def export_end_state(env, r, completed):
     """
+    :param completed:
     :param env:
     :param r:
     :return: JSON object in string
     """
 
     x = {
-        "acc_rewards": r
+        "acc_rewards": r,
+        "completed": completed
     }
 
     return x
@@ -50,8 +52,8 @@ def export_start_state(env):
         "width": env.width,
         "height": env.height,
         "start_locations": {"pickup": list(env.objective_manager.pickup_get_positions_np()),
-                      "dropoff": list(env.objective_manager.dropoff_get_positions_np()),
-                      "agents": env.robot_positions()}
+                            "dropoff": list(env.objective_manager.dropoff_get_positions_np()),
+                            "agents": env.robot_positions()}
     }
 
     return x

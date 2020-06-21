@@ -1,16 +1,16 @@
 # DEFAULT PARAMETERS FOR NETWORK
 
-default = {'activation': 'relu',
-           'optimizer': 'Adam',
-           'losses': 'mse',
-           'hidden_layers': [0],
-           'dropout': [0],
-           'batch_size': [0],
-           'epochs': 4000,  # uses early stopping
-           'shape': ['triangle', 'brick'],
-           'early_stopping': [True],
-           'patience': [5],
-           }
+default_params = {'activation': 'relu',
+                  'optimizer': 'Adam',
+                  'losses': 'mse',
+                  'hidden_layers': [0],
+                  'dropout': [0],
+                  'batch_size': [0],
+                  'epochs': 4000,  # uses early stopping
+                  'shape': ['triangle', 'brick'],
+                  'early_stopping': [True],
+                  'patience': [5],
+                  }
 
 talos_params = {'activation': ['relu', 'elu'],
                 'optimizer': ['Nadam', 'Adam'],
@@ -25,17 +25,6 @@ talos_params = {'activation': ['relu', 'elu'],
                 }
 
 # MAP
-
-map_5x5 = {
-    "id": 1,
-    "width": 5,
-    "height": 5,
-    "agents": 2,
-    "pickup": {1: [(2, 1), (3, 1)]},
-    "dropoff": {1: [(3, 3), (4, 3)]},
-    "dummies": 0,  # they are not moving rn, left unimplemented
-    "observation_space": 13
-}
 
 sample_easy = {
     "id": 2,
@@ -52,10 +41,59 @@ small_room_single = {
     "id": 3,
     "width": 10,
     "height": 6,
-    "map": "maps/small_room.map",
+    "map": ["maps/small_room/empty.map", 1],
+    "agents": 1,
+    "dummies": 4,
+    "observation_space": 7,
+    "reward": "gradient",
+    "sensor_information": True
+}
+
+small_room_single_test = {
+    "id": 3,
+    "width": 10,
+    "height": 6,
+    "map": ["maps/small_room/", 150],
     "agents": 1,
     "dummies": 0,
-    "observation_space": 7
+    "observation_space": 7,
+    "reward": "static",
+    "load_model": "single_gradient_dynamic_negative"
+}
+
+wide_room_single = {
+    "id": 3,
+    "width": 16,
+    "height": 16,
+    "map": ["maps/wide_room/empty.map", 1],
+    "agents": 1,
+    "dummies": 4,
+    "observation_space": 7,
+    "reward": "gradient",
+    "sensor_information": True
+}
+
+narrow_passages_single = {
+    "id": 4,
+    "width": 16,
+    "height": 16,
+    "map": ["maps/narrow_passages/empty.map", 1],
+    "agents": 1,
+    "dummies": 0,
+    "observation_space": 7,
+    "reward": "gradient"
+}
+
+small_narrow_passages_single = {
+    "id": 5,
+    "width": 13,
+    "height": 7,
+    "map": ["maps/small_narrow_passages/empty.map", 1],
+    "agents": 1,
+    "dummies": 0,
+    "observation_space": 7,
+    "reward": "gradient",
+    "sensor_information": True
 }
 
 small_room_p2_multiple = {
@@ -77,5 +115,3 @@ test_obj_manager_room = {
     "dummies": 0,
     "observation_space": 7
 }
-
-

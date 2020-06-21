@@ -53,8 +53,11 @@ class Objective_Manager(object):
 
         det = abs(rY - pY) + abs(rX - pX)
         if det == 1:
-            # check from which position
+            # TODO: check from which position
             self._robot_objectives_dict[robot.get_id()] = 0
+            return True
+
+        return False
 
     """ GETTER AND SETTER METHODS """
 

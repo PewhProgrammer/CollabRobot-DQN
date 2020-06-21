@@ -12,8 +12,19 @@ from common.robot import Robot
 class RobotDummy(Robot):
 
     # The class "constructor" - It's actually an initializer 
-    def __init__(self, posX, posY, width, height, diameter, speed):
-        super().__init__(posX, posY, width, height, diameter, speed)
+    def __init__(self, id, posX, posY, width, height, diameter, speed):
+        super().__init__(id, posX, posY, width, height, diameter, speed)
 
-    def move(self, action):
-        return super().move(random.randrange(8))
+    def move(self):
+        return super().move(random.randrange(6))
+
+    def isDummy(self):
+        return True
+
+    def get_position(self):
+        return self.posY, self.posX
+
+    def reset(self):
+        self.posX = random.randint(0, self.width - 1)
+        self.posY = random.randint(0, self.height - 1)
+        self.rewarded = False

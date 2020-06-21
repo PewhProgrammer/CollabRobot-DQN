@@ -66,8 +66,8 @@ class MultiAgentCustomEnv(gym.Env):
                 self.env.move_robots(action2, 1)
                 self.env.update_grid()
 
-        reward, done = self.env.requirements.validate(self.env, self.env.robots[0],
-                                                      action)  # check if pickup and dropoff is successful
+        reward, done = self.env.reward_manager.observe(self.env, self.env.robots[0],
+                                                       action)  # check if pickup and dropoff is successful
 
         done = self.current_step >= self.ep_length or done
 

@@ -61,7 +61,7 @@ function setup() {
           );
           tr.append($("<th>").text(`${Object.keys(payload.games).length}`));
           tr.append($("<th>").text(`${payload.acc_rewards}`));
-          tr.append($("<th>").text("Yes"));
+          tr.append($("<th>").text(`${payload.completed}`));
           table.append(tr);
 
           data.push(payload);
@@ -222,28 +222,19 @@ function init_new_grid(board) {
   x.innerHTML = `Episode: ${board.episode}`;
 
   x = document.getElementsByClassName("reward")[0];
-  x.innerHTML = `Reward: ${board.acc_rewards[0]}`;
+  x.innerHTML = `Reward: ${board.acc_rewards}`;
   
 }
 
 function create_objectives(board) {
+  pickups = [];
+  dropoffs = [];
+  dropoffs.push(fill_objective(board.dropoff, "#c3bcc3", "D", adjustedX));
   pickups.push(fill_objective(board.pickup, "#CC6600", "P", adjustedX));
-  dropoffs.push(fill_objective(board.dropoff, "#3CB371", "D", adjustedX));
 }
 
-function fill_objective(target_single, fill, letter, size) {
-  t = null;
-  target = [target_single];
-
-  target.forEach(function(value, i) {
-    if (i == 0) {
-      t = new Target(value, adjustedX, adjustedY, fill, letter, size);
-    } else {
-      t.addPoints(value);
-    }
-  });
-
-  return t;
+function fill_objective(pos, fill, letter, size) {
+  return new Target(pos, adjustedX, adjustedY, fill, letter, size)
 }
 
 function create_agents(agents) {
@@ -251,7 +242,7 @@ function create_agents(agents) {
     if (agents.hasOwnProperty(key)) {
       pos = agents[key];
       agent = key == 0 ? true : false;
-      robot = new Robot(pos, adjustedX, 1, agent);
+      robot = new Robot(key, pos, adjustedX, 1, agent);
       robot.setInterpolation(adjustedX, adjustedY);
       robots.push(robot);
     }

@@ -4,7 +4,7 @@
 from flask import Flask, render_template
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
-from common.serializer import export_state, export_start_state
+from io_functions.serializer import export_state, export_start_state
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'

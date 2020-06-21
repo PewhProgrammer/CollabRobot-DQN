@@ -10,9 +10,10 @@ class CustomEnv(gym.Env):
     """Custom Environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, config=None, ep_length: int = 100):
+    def __init__(self, config=None, ep_length: int = 150):
         super(CustomEnv, self).__init__()
 
+        self.config = config
         config["agents"] = 1
         self.env = Environment(config=config)
         self.env_size = (config["width"], config["height"])
@@ -21,7 +22,10 @@ class CustomEnv(gym.Env):
         # They must be gym.spaces objects
 
         self.N_DISCRETE_ACTIONS = 6
-        self.N_DISCRETE_OBSERVATION = config["observation_space"]
+        if config["sensor_information"]:
+            self.N_DISCRETE_OBSERVATION = config["observation_space"] + 8
+        else:
+            self.N_DISCRETE_OBSERVATION = config["observation_space"]
         # shape = shape.reshape(1, self.N_DISCRETE_OBSERVATION)
 
         # Example when using discrete actions:
@@ -44,16 +48,15 @@ class CustomEnv(gym.Env):
     def step(self, action):
         # TODO: change rID architecutre
         self.env.move_robots(action, 0)
-        self.env.update_grid()
         self.env.move_objectives(0)
         self.env.update_grid()
-        reward, done = self.env.requirements.validate(self.env, self.env.robots[0],
-                                                      action)  # check if pickup and dropoff is successful
+        reward, done = self.env.reward_manager.observe(self.env, self.env.robots[0],
+                                                       action)  # check if pickup and dropoff is successful
 
         done = self.current_step >= self.ep_length or done
 
         # determine data for input layer
-        self.state = self._input_data(0)
+        self.state = self.input_data(0)
 
         self.current_step += 1
 
@@ -65,7 +68,7 @@ class CustomEnv(gym.Env):
         self.steps_beyond_done = None
         self.done = False
         self.env.reset(self.num_resets)
-        self.state = self._input_data(0)
+        self.state = self.input_data(0)
 
         return self.state  # reward, done, info can't be included
 
@@ -77,11 +80,17 @@ class CustomEnv(gym.Env):
 
     # scheme: agent pos, pickup pos, dropoff pos, carrying
 
-    def _input_data(self, robotID):
+    def input_data(self, robotID):
+
         data = self.env.all_agents_position(), \
                self.env.objective_manager.pickup_get_positions_np(), \
                self.env.objective_manager.dropoff_get_positions_np(), \
                self.env.objective_manager.has_pickup(robotID)
+
+        if self.config["sensor_information"]:
+            tmp = list(data) + self.env.grid.get_sensoric_distance(self.env.robot_position(robotID))
+            data = tuple(tmp)
+
         shape = np.concatenate(data, axis=None)
         return shape.reshape(1, self.N_DISCRETE_OBSERVATION)
 
@@ -92,3 +101,6 @@ class CustomEnv(gym.Env):
 
     def get_env(self):
         return self.env
+
+    def get_episode_len(self):
+        return self.ep_length

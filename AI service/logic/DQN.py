@@ -42,7 +42,7 @@ class DQN(object):
     def create_model(self):
 
         model = Sequential()
-        model.add(Dense(24, input_dim=self.env.observation_space,
+        model.add(Dense(24, input_dim=self.env.N_DISCRETE_OBSERVATION,
                         activation="relu"))
         model.add(Dense(48, activation="relu"))
         model.add(Dense(24, activation="relu"))
@@ -87,6 +87,7 @@ class DQN(object):
                 Q_future = max(self.target_model.predict(new_state)[0])
                 target[0][action] = reward + Q_future * self.gamma
             self.out = self.model.fit(state, target, epochs=1, verbose=0)
+        self.target_train()
 
     def target_train(self):
         weights = self.model.get_weights()
