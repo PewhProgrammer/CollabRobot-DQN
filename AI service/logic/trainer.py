@@ -1,10 +1,7 @@
 """Core ML module for predicting the next move of the robots
 """
 
-from routes import render_env
-import io_functions.game_logger as logger
 from logic.DQN import DQN
-from containers.env_wrapper import *
 
 
 class Trainer(object):
