@@ -7,17 +7,31 @@ function createStatistics(payload) {
   // Area Chart Example
   var ctx = document.getElementById("myAreaChart");
   var myLineChart = new Chart(ctx, {
-    type: "line",
+    type: "scatter",
     data: {
-      labels: [],
+      labels: ["Completed", "Not Completed"],
       datasets: [
         {
           label: "Points",
           lineTension: 0.3,
-          backgroundColor: "rgba(2,117,216,0.2)",
+          backgroundColor: "rgba(2,216,25,0.2)",
           borderColor: "rgba(2,117,216,1)",
           pointRadius: 5,
-          pointBackgroundColor: "rgba(2,117,216,1)",
+          pointBackgroundColor: "rgba(2,217,26,1)",
+          pointBorderColor: "rgba(255,255,255,0.8)",
+          pointHoverRadius: 5,
+          pointHoverBackgroundColor: "rgba(2,117,216,1)",
+          pointHitRadius: 50,
+          pointBorderWidth: 2,
+          data: []
+        },
+        {
+          label: "Points",
+          lineTension: 0.3,
+          backgroundColor: "rgba(215,12,21,0.2)",
+          borderColor: "rgba(2,117,216,1)",
+          pointRadius: 5,
+          pointBackgroundColor: "rgba(224,17,21,1)",
           pointBorderColor: "rgba(255,255,255,0.8)",
           pointHoverRadius: 5,
           pointHoverBackgroundColor: "rgba(2,117,216,1)",
@@ -59,16 +73,32 @@ function createStatistics(payload) {
 
   for (var key in payload) {
     if (payload.hasOwnProperty(key)) {
-      addData(myLineChart, payload[key].episode, payload[key].acc_rewards[0]);
+      addData(myLineChart, payload[key].episode, payload[key].acc_rewards, payload[key].completed);
     }
   }
 }
 
-function addData(chart, label, data) {
-  chart.data.labels.push(label);
-  chart.data.datasets.forEach(dataset => {
-    dataset.data.push(data);
-  });
+function addData(chart, label, data, completed) {
+  // updateConfigByMutating(chart, completed)
+  point = {x:parseInt(label.substr(1)), y:data}
+  
+  if (completed){
+    chart.data.labels.push(label);
+    chart.data.datasets[0].data.push(point);
+  } else {
+    chart.data.labels.push(label);
+    chart.data.datasets[1].data.push(point);
+  }
+
+  chart.update();
+}
+
+function updateConfigByMutating(chart, completed) {
+  if (completed) chart.data.datasets.pointBackgroundColor = "rgba(0,255,0,1)";
+  else chart.options.title.text = "rgba(255,0,0,1)";
+
+  console.log(chart.data.datasets)
+  
   chart.update();
 }
 

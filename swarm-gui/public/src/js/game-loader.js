@@ -8,6 +8,12 @@ let pickups = [];
 let dropoffs = [];
 const data = [];
 let board = [[]];
+let completion_rate = 0
+let sensor = false
+let double_dqn = false
+let dueling_dqn = false
+let prioritized_dqn = false
+let reward_function = "none"
 
 let stop = false;
 
@@ -50,21 +56,30 @@ function setup() {
           // console.log(lines[line])
           let payload = JSON.parse(line);
           // data a new table row
-          // table.append($("<tr>"));
-          let tr = $("<tr>");
-          tr.append($("<th>").text(`${payload.episode.substr(1)}`));
-          tr.append($("<th>").text(`${payload.width}x${payload.height}`));
-          tr.append(
-            $("<th>").text(
-              `${Object.keys(payload.start_locations.agents).length}`
-            )
-          );
-          tr.append($("<th>").text(`${Object.keys(payload.games).length}`));
-          tr.append($("<th>").text(`${payload.acc_rewards}`));
-          tr.append($("<th>").text(`${payload.completed}`));
-          table.append(tr);
 
-          data.push(payload);
+          if(payload.hasOwnProperty('episode')){
+            let tr = $("<tr>");
+            tr.append($("<th>").text(`${payload.episode.substr(1)}`));
+            tr.append($("<th>").text(`${payload.width}x${payload.height}`));
+            tr.append(
+              $("<th>").text(
+                `${Object.keys(payload.start_locations.agents).length}`
+              )
+            );
+            tr.append($("<th>").text(`${Object.keys(payload.games).length}`));
+            tr.append($("<th>").text(`${payload.acc_rewards}`));
+            tr.append($("<th>").text(`${payload.completed}`));
+            table.append(tr);
+  
+            data.push(payload);
+          } else {
+            completion_rate = payload.completion;
+            sensor = payload.sensor_information
+            dueling_dqn = payload.dueling
+            double_dqn = payload["double-dqn"]
+            prioritized_dqn = payload.prioritized
+            reward_function = payload.reward
+          }
         }
       }
 
@@ -74,7 +89,6 @@ function setup() {
 
       // End of file
       if (isEof) {
-        console.log(countLines);
 
         createStatistics(data);
 
@@ -222,7 +236,20 @@ function init_new_grid(board) {
   x.innerHTML = `Episode: ${board.episode}`;
 
   x = document.getElementsByClassName("reward")[0];
-  x.innerHTML = `Reward: ${board.acc_rewards}`;
+  x.innerHTML = `Episode Reward: ${Math.round(board.acc_rewards*100)/100}`;
+
+  var x = document.getElementsByClassName("completion")[0];
+  x.innerHTML = `Completion Rate: ${Math.round(completion_rate*100)/100}`;
+
+  var x = document.getElementsByClassName("sensor")[0];
+  x.innerHTML = `Sensor Information: ${sensor}`;
+
+  var x = document.getElementsByClassName("reward_function")[0];
+  x.innerHTML = `R-Function: ${reward_function}`;
+
+  var x = document.getElementsByClassName("ddp")[0];
+  x.innerHTML = `double/dueling/prioritized: ${double_dqn}/${dueling_dqn}/${prioritized_dqn}`;
+
   
 }
 

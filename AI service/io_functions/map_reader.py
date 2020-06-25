@@ -60,7 +60,7 @@ def create_test_maps(map_path):
 
     for i in range(150):
         f = open("{}v{}.map".format(map_path, i), "w")
-        grid, obj = load_map("{}empty.map".format(map_path), 10, 6)
+        grid, obj = load_map("{}empty.map".format(map_path), 13, 8)
         row, column = len(grid.data), len(grid.data[0])
 
         p_pos, d_pos = obj[0].get_pickup_pos(), obj[0].get_dropoff_pos()
@@ -90,5 +90,5 @@ def test_sensoric_distance_calculation(map_path):
 
 
 if __name__ == "__main__":
-    # create_test_maps("../maps/small_room/")
-    test_sensoric_distance_calculation("../maps/small_room/")
+    create_test_maps("../maps/normal_room/")
+    # test_sensoric_distance_calculation("../maps/small_room/")

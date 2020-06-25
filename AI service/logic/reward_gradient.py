@@ -18,9 +18,10 @@ class Reward_Gradient(object):
     # The class "constructor" - It's actually an initializer
     def __init__(self, grid):
         self.grid = grid
-        self.p_reward = 1
-        self.d_reward = 2
-        self.d_reward_final = 50
+        self.p_reward = 0.1
+        self.p_reward_final = 500
+        self.d_reward = 1
+        self.d_reward_final = 500
         self.collision_punishment = -15
         self.default_punishment = 0
 
@@ -47,22 +48,22 @@ class Reward_Gradient(object):
         if pickup:
             x1, y1 = agent.get_position()
             x2, y2 = objective.get_pickup_pos()
-            obj_reward_fraction = self.p_reward / 10
+            obj_reward_fraction = self.p_reward
         else:
             x1, y1 = objective.get_pickup_pos()
             x2, y2 = objective.get_dropoff_pos()
-            obj_reward_fraction = self.d_reward / 5
+            obj_reward_fraction = self.d_reward
 
         # compute euclidean distance
-        euc_dist = compute_euc_dist(x1, y1, x2, y2)
+        euc_dist = math.pow(compute_euc_dist(x1, y1, x2, y2), 1.4)
 
-        return obj_reward_fraction - (obj_reward_fraction * (euc_dist / max_dist))
+        return obj_reward_fraction - (obj_reward_fraction * (euc_dist / math.pow(max_dist, 1.4)))
 
     def reward_on_grasping(self, agent, env):
         obj_manager = env.objective_manager
         # checks if the agent receives the carrier or not
         if agent.id in obj_manager.get_robot_objective_dict():
-            result = 0 if agent.rewarded else self.p_reward, True
+            result = 0 if agent.rewarded else self.p_reward_final, True
             agent.rewarded = True
         else:
             result = self.reward_on_distance(agent, obj_manager, env.max_euc_dist), False
@@ -79,9 +80,9 @@ class Reward_Gradient(object):
     def punish(self, agent, actionID):
         punishment = self.default_punishment  # default punishment
 
-        # punish waiting more
-        if actionID == 0:
-            punishment -= 0.1
+        # punish for being stuck
+        if agent.is_stuck(actionID):
+            punishment += self.collision_punishment
 
         # check collision
         agent_pos = agent.get_position()

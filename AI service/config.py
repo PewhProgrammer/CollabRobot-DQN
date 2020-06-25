@@ -43,23 +43,41 @@ small_room_single = {
     "height": 6,
     "map": ["maps/small_room/empty.map", 1],
     "agents": 1,
-    "dummies": 4,
+    "dummies": 0,
     "observation_space": 7,
     "reward": "gradient",
-    "sensor_information": True
+    "reward_conf": [0.1, 500, 1, 500, -15, 0],
+    "sensor_information": False,
+    "timesteps": 500000,
+    "prioritized": True,
+    "dueling": True,
+    "double-dqn": True,
+    "study_results": "./study/algorithm_test/concept-1/small_empty/",
+    "experiment_name": "steps-500000"
 }
 
-small_room_single_test = {
-    "id": 3,
-    "width": 10,
-    "height": 6,
-    "map": ["maps/small_room/", 150],
+small_room_single_test = {**small_room_single, 'map': ["maps/small_room/", 150]}
+
+normal_room_single = {
+    "id": 4,
+    "width": 13,
+    "height": 8,
+    "map": ["maps/normal_room/empty.map", 1],
     "agents": 1,
     "dummies": 0,
     "observation_space": 7,
-    "reward": "static",
-    "load_model": "single_gradient_dynamic_negative"
+    "reward": "gradient",
+    "reward_conf": [0.1, 500, 1, 500, -15, 0],
+    "sensor_information": False,
+    "timesteps": 800000,
+    "prioritized": True,
+    "dueling": True,
+    "double-dqn": True,
+    "study_results": "./study/algorithm_test/concept-1/normal_empty/",
+    "experiment_name": "steps-700000"
 }
+
+normal_room_single_test = {**normal_room_single, 'map': ["maps/normal_room/", 150]}
 
 wide_room_single = {
     "id": 3,
@@ -87,13 +105,19 @@ narrow_passages_single = {
 small_narrow_passages_single = {
     "id": 5,
     "width": 13,
-    "height": 7,
+    "height": 8,
     "map": ["maps/small_narrow_passages/empty.map", 1],
     "agents": 1,
     "dummies": 0,
     "observation_space": 7,
     "reward": "gradient",
-    "sensor_information": True
+    "sensor_information": False,
+    "timesteps": 500000,
+    "prioritized": True,
+    "dueling": True,
+    "double-dqn": True,
+    "study_results": "./study/algorithm_test/concept-1/small_warehouse/",
+    "experiment_name": "small_narrow_-15onstuck"
 }
 
 small_room_p2_multiple = {
@@ -115,3 +139,6 @@ test_obj_manager_room = {
     "dummies": 0,
     "observation_space": 7
 }
+
+if __name__ == '__main__':
+    print(small_room_single_test)

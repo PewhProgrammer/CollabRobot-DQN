@@ -8,12 +8,11 @@ from enum import Enum
 
 
 class Movement(Enum):
-    WAIT = 0
-    NORTH = 1
-    SOUTH = 2
-    EAST = 3
-    WEST = 4
-    GRASP = 5
+    NORTH = 0
+    SOUTH = 1
+    EAST = 2
+    WEST = 3
+    GRASP = 4
 
 
 class Robot(object):
@@ -70,7 +69,6 @@ class Robot(object):
 
     # map the inputs to the function blocks
     options = {
-        Movement.WAIT: wait,
         Movement.NORTH: north,
         Movement.SOUTH: south,
         Movement.EAST: east,
@@ -99,6 +97,10 @@ class Robot(object):
     def get_position(self):
         return self.posY, self.posX
 
+    def is_stuck(self, actionid):
+        # check if previous action changed position or did not
+        return self.posY == self.oldPos[0] and self.posX == self.oldPos[1] and actionid != Movement.GRASP.value
+
     def reset_position(self):
         self.posX, self.posY = self.oldPos[1], self.oldPos[0]
 
@@ -112,4 +114,4 @@ class Robot(object):
 
 
 def get_sample_movement():
-    return Movement(random.randint(0, 5))
+    return Movement(random.randint(0, 4))

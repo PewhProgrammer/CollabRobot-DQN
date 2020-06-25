@@ -10,6 +10,7 @@ from logic.reward_static import Reward_Static
 from logic.reward_gradient import Reward_Gradient
 
 from io_functions.map_reader import load_map
+from common.robot import Movement
 
 
 class Environment(object):
@@ -53,7 +54,7 @@ class Environment(object):
 
         # move the agent with the action
         actionID = int(action)
-        if actionID == 5:  # robot is grasping; check for objectives in close proximity
+        if actionID == Movement.GRASP.value:  # robot is grasping; check for objectives in close proximity
             self.objective_manager.check_grasping_objective(self.robots[rID])
         self.last_action = actionID
         pos = agent.move(actionID)

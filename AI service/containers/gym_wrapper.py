@@ -10,7 +10,7 @@ class CustomEnv(gym.Env):
     """Custom Environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, config=None, ep_length: int = 150):
+    def __init__(self, config=None, ep_length: int = 50):
         super(CustomEnv, self).__init__()
 
         self.config = config
@@ -21,7 +21,7 @@ class CustomEnv(gym.Env):
         # Define action and observation space
         # They must be gym.spaces objects
 
-        self.N_DISCRETE_ACTIONS = 6
+        self.N_DISCRETE_ACTIONS = 5
         if config["sensor_information"]:
             self.N_DISCRETE_OBSERVATION = config["observation_space"] + 8
         else:
@@ -46,7 +46,7 @@ class CustomEnv(gym.Env):
         self.reset()
 
     def step(self, action):
-        # TODO: change rID architecutre
+
         self.env.move_robots(action, 0)
         self.env.move_objectives(0)
         self.env.update_grid()
