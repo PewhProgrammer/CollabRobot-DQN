@@ -26,5 +26,6 @@
 **/__pycache__/
 **/venv
 
-AI_sample
-/AI service/study/
+baseline
+/RL_Agent/study/
+/RL_Agent/data/
