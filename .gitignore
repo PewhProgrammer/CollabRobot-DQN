@@ -29,3 +29,6 @@
 baseline
 /RL_Agent/study/
 /RL_Agent/data/
+
+*.dll
+AI service/*

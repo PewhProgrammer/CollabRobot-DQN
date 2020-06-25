@@ -1,0 +1,24 @@
+<<<<<<< HEAD:AI service/README.md
+Execute this command to run the application
+
+``python run.py``
+
+# Tensorboard
+
+tensorboard --logdir ./study/algorithm_test/double_dueling_prioritized/sparse_700000
+
+tensorboard --logdir ./study/algorithm_test/concept-1/small_warehouse
+
+tensorboard --logdir ./study/algorithm_test/concept-1
+
+=======
+Execute this command to run the application
+
+``python run.py``
+
+# Tensorboard
+
+tensorboard --logdir ./study/algorithm_test/double_dueling_prioritized/sparse_700000
+
+tensorboard --logdir ./study/algorithm_test/concept-1/small_narrow
+>>>>>>> 49442cb8bbde71904e755caaa56deb54fe1dc7c6:RL_Agent/README.md
