@@ -17,7 +17,8 @@ from datetime import timedelta
 
 def baseline():
     config_name = config.small_room_single_test
-    for i in range(5):
+    for i in range(2):
+        i += 3
         train_single(config.small_room_single, i)
         test_phase(config.small_room_single_test, i)
 
