@@ -8,14 +8,9 @@ import math
 from enum import Enum
 
 
-class ObjectiveType(Enum):
-    PICKUP = 0
-    DROPOFF = 1
-
-
 class Objectives(object):
 
-    def __init__(self, p_pos, d_pos, weight):
+    def __init__(self, p_pos=(), d_pos=(), weight=1):
         self._positions = []
         self._pickup = p_pos  # tuple (y,x)
         self._dropoff = d_pos
@@ -24,9 +19,9 @@ class Objectives(object):
         self._weight = weight
 
     # compute assumed position of pickup
-    def compute_new_pickup_pos(self, robot_move_diff):
+    def compute_new_pickup_pos(self, robot_move_diff) -> ():
         if self._delivered:
-            return
+            return self._dropoff
 
         # robot_move_diff is the difference from its previos position and its current position
         robotYDiff, robotXDIff = robot_move_diff
@@ -85,20 +80,6 @@ class Objectives(object):
 
     def get_weight(self):
         return self._weight
-
-
-def generate_objective(pickuplist, dropofflist):
-    # create new pickup and dropoff point
-    pickup = Objectives(ObjectiveType.PICKUP)
-    dropoff = Objectives(ObjectiveType.DROPOFF)
-
-    for x, y in pickuplist:
-        pickup.add_point(x, y)
-
-    for x, y in dropofflist:
-        dropoff.add_point(x, y)
-
-    return pickup, dropoff
 
 
 def generate_random_point(self, x, y) -> np.array:

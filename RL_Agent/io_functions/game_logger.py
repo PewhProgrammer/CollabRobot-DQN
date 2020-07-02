@@ -9,13 +9,10 @@ logger.setLevel(logging.INFO)
 start = {}
 body = []
 
-version = -1
 
+def create_new_handler(path, file_name, version):
+    global start, body, logger
 
-def create_new_handler(path, file_name):
-    global version, start, body, logger
-
-    version += 1
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
 

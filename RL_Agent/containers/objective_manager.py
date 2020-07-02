@@ -13,7 +13,7 @@ from io_functions.map_reader import load_map
 
 class Objective_Manager(object):
 
-    def __init__(self, obj_dict):
+    def __init__(self, obj_dict={}):
         self._objectives_dict = obj_dict
         self._robot_objectives_dict = {}
 
@@ -58,6 +58,9 @@ class Objective_Manager(object):
             return True
 
         return False
+
+    def is_grasping_objective(self, robot):
+        return robot.get_id() in self._robot_objectives_dict
 
     """ GETTER AND SETTER METHODS """
 

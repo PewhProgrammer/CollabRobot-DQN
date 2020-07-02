@@ -20,7 +20,7 @@ def export_state(env, state_id="NONE"):
         "locations": {"pickup": list(env.objective_manager.pickup_get_positions_np()),
                       "agents": env.robot_positions()},
         "collisions": [],
-        "action": env.last_action,
+        "action": env.last_action,  # TODO: change to several actions in multenv
     }
 
     return json.dumps(x, default=lambda o: o.__dict__, separators=(',', ':'))
@@ -36,7 +36,8 @@ def export_end_state(env, r, completed):
 
     x = {
         "acc_rewards": r,
-        "completed": completed
+        "completed": completed,
+        "picked_up": env.reached_pickups()
     }
 
     return x

@@ -115,10 +115,16 @@ class Target {
     fill(this.fill);
     rect(posX, posY, this.size, this.size);
     fill(0);
-    strokeWeight(4);
-    stroke(51);
-    textSize(40);
-    text(this.letter, posX + this.offsetX, posY + this.offsetY);
+    strokeWeight(1);
+    stroke(0);
+    if (this.letter == "P") 
+    {
+      textSize(40);
+      text(this.letter, posX + this.offsetX + 5, posY + this.offsetY);
+    } else {
+      textSize(15);
+      text(this.letter, posX + this.offsetX - 6, posY + this.offsetY - 7);
+    }
     noStroke();
   }
 
@@ -155,7 +161,7 @@ class Robot {
     // check if border has been reached and reset
     strokeWeight(4);
     stroke(51);
-    ellipse(this.x, this.y, this.diameter + this.dia_scale , this.diameter + this.dia_scale);
+    ellipse(this.x, this.y, this.diameter + this.dia_scale, this.diameter + this.dia_scale);
 
     fill(0);
     textSize(30);

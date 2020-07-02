@@ -102,23 +102,29 @@ narrow_passages_single = {
     "reward": "gradient"
 }
 
-small_narrow_passages_single = {
+small_warehouse_single = {
     "id": 5,
     "width": 13,
     "height": 8,
-    "map": ["maps/small_narrow_passages/empty.map", 1],
+    "map": ["maps/small_warehouse/empty.map", 1],
     "agents": 1,
     "dummies": 0,
     "observation_space": 7,
-    "reward": "gradient",
+    "reward": "custom",
+    # "reward_conf": [0.05, 500, 1, 500, -15, 0],
+    "reward_conf": [1, 10, 10, 2000, 0, 0],
     "sensor_information": False,
-    "timesteps": 500000,
+    "timesteps": 2000000,
+    "ep_length": 50,
     "prioritized": True,
     "dueling": True,
     "double-dqn": True,
+    "exploration_frac": 0.1,
     "study_results": "./study/algorithm_test/concept-1/small_warehouse/",
-    "experiment_name": "small_narrow_-15onstuck"
+    "experiment_name": "experiment"
 }
+
+small_warehouse_single_test = {**small_warehouse_single, 'map': ["maps/small_warehouse/", 150]}
 
 small_room_p2_multiple = {
     "id": 3,

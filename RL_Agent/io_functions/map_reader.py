@@ -90,5 +90,5 @@ def test_sensoric_distance_calculation(map_path):
 
 
 if __name__ == "__main__":
-    create_test_maps("../maps/normal_room/")
+    create_test_maps("../maps/small_warehouse/")
     # test_sensoric_distance_calculation("../maps/small_room/")

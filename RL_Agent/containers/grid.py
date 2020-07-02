@@ -10,7 +10,7 @@ import numpy as np
 class Grid(object):
 
     # The class "constructor" - It's actually an initializer
-    def __init__(self, grid, width, height):
+    def __init__(self, grid=[], width= 0, height=0):
         self._stored_positions = []
         self._width = width
         self._height = height
@@ -54,60 +54,60 @@ class Grid(object):
             # check NORTH
             list_count = 0
             tmp[:] = pos
-            tmp[0] = pos[0] - distance
+            tmp[0] = max(pos[0] - distance, 0)
             if self.check_collision(tmp) and sensor_list[list_count] == 0:
                 sensor_list[list_count] = distance
 
             # check SOUTH
             list_count += 1
             tmp[:] = pos
-            tmp[0] = pos[0] + distance
+            tmp[0] = min(pos[0] + distance, self._height - 1)
             if self.check_collision(tmp) and sensor_list[list_count] == 0:
                 sensor_list[list_count] = distance
 
             # check WEST
             list_count += 1
             tmp[:] = pos
-            tmp[1] = pos[1] - distance
+            tmp[1] = max(pos[1] - distance, 0)
             if self.check_collision(tmp) and sensor_list[list_count] == 0:
                 sensor_list[list_count] = distance
 
             # check EAST
             list_count += 1
             tmp[:] = pos
-            tmp[1] = pos[1] + distance
+            tmp[1] = min(pos[1] + distance, self._width - 1)
             if self.check_collision(tmp) and sensor_list[list_count] == 0:
                 sensor_list[list_count] = distance
 
             # check NORTH WEST
             list_count += 1
             tmp[:] = pos
-            tmp[0] = pos[0] - distance
-            tmp[1] = pos[1] - distance
+            tmp[0] = max(pos[0] - distance, 0)
+            tmp[1] = max(pos[1] - distance, 0)
             if self.check_collision(tmp) and sensor_list[list_count] == 0:
                 sensor_list[list_count] = distance
 
             # check NORTH EAST
             list_count += 1
             tmp[:] = pos
-            tmp[0] = pos[0] - distance
-            tmp[1] = pos[1] + distance
+            tmp[0] = max(pos[0] - distance, 0)
+            tmp[1] = min(pos[1] + distance, self._width - 1)
             if self.check_collision(tmp) and sensor_list[list_count] == 0:
                 sensor_list[list_count] = distance
 
             # check SOUTH WEST
             list_count += 1
             tmp[:] = pos
-            tmp[0] = pos[0] + distance
-            tmp[1] = pos[1] - distance
+            tmp[0] = min(pos[0] + distance, self._height - 1)
+            tmp[1] = max(pos[1] - distance, 0)
             if self.check_collision(tmp) and sensor_list[list_count] == 0:
                 sensor_list[list_count] = distance
 
             # check SOUTH EAST
             list_count += 1
             tmp[:] = pos
-            tmp[0] = pos[0] + distance
-            tmp[1] = pos[1] + distance
+            tmp[0] = min(pos[0] + distance, self._height - 1)
+            tmp[1] = min(pos[1] + distance, self._width - 1)
             if self.check_collision(tmp) and sensor_list[list_count] == 0:
                 sensor_list[list_count] = distance
 
@@ -129,9 +129,7 @@ class Grid(object):
         return objective.is_delivered()
 
     def check_collision(self, pos):
-        # check boundaries
-        if (pos[0] < 0 or pos[0] >= self._height) or (pos[1] < 0 or pos[1] >= self._width):
-            return True
+        self.check_boundary(pos)
 
         # if agent collided with obstacles and if pickup collided with anything else
         agent_num = 0
@@ -145,11 +143,9 @@ class Grid(object):
 
         return False
 
-    def check_collision_into_solids(self, pos):
-        # Is used to prevent agents in running into walls
-        # check boundaries
-        if (pos[0] < 0 or pos[0] >= self._height) or (pos[1] < 0 or pos[1] >= self._width):
-            return True
+    def check_collision_into_solids(self, pos, carrying=False):
+        # use this method to prevent the agent from moving into an obstacle
+        self.check_boundary(pos)
 
         # if agent collided with obstacles and if pickup collided with anything else
         agent_num = 0
@@ -157,9 +153,16 @@ class Grid(object):
             if is_number(i):
                 agent_num += 1
 
-            if i == '#' or (not is_number(i) and i.startswith('P')):  # or i.startswith('X')
+            if i == '#' or (not is_number(i) and i.startswith('P') and not carrying):  # or i.startswith('X')
                 return True
 
+        return False
+
+    def check_boundary(self, pos):
+        # Is used to prevent agents in running into walls
+        # check boundaries
+        if (pos[0] < 0 or pos[0] >= self._height) or (pos[1] < 0 or pos[1] >= self._width):
+            return True
         return False
 
     def check_collision_as_pickup(self, pos):

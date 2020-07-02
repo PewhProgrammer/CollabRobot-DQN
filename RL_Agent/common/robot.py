@@ -14,16 +14,23 @@ class Movement(Enum):
     WEST = 3
     GRASP = 4
 
+    def __init__(self, n=0, s=1, e=2, w=3, g=4):
+        self.NORTH = n
+        self.SOUTH = s
+        self.EAST = e
+        self.WEST = w
+        self.GRASP = g
+
 
 class Robot(object):
 
     # The class "constructor" - It's actually an initializer 
-    def __init__(self, id, posX, posY, width, height, diameter, speed):
+    def __init__(self, id=-1, posX=-1, posY=-1, width=0, height=0, diameter=0, speed=1):
         self.posX = posX
         self.posY = posY
         self.diam = diameter
-        self.speed = speed
-        self.width = width
+        self.speed: int = speed
+        self.width: int = width
         self.height = height
         self.rewarded = False
         self.id = id

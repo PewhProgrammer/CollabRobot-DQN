@@ -15,6 +15,7 @@ class CustomEnv(gym.Env):
 
         self.config = config
         config["agents"] = 1
+        ep_length = config["ep_length"]
         self.env = Environment(config=config)
         self.env_size = (config["width"], config["height"])
 
@@ -36,6 +37,7 @@ class CustomEnv(gym.Env):
         # initial condition
         self.steps_beyond_done = None
         self.done = False
+        self.successes = 0
 
         self.ep_length = ep_length
         self.current_step = 0
@@ -53,6 +55,13 @@ class CustomEnv(gym.Env):
         reward, done = self.env.reward_manager.observe(self.env, self.env.robots[0],
                                                        action)  # check if pickup and dropoff is successful
 
+        info = {}
+        if done:
+            self.successes += 1
+            info["is_success"] = 1
+        elif self.current_step >= self.ep_length:
+            info["is_success"] = 0
+
         done = self.current_step >= self.ep_length or done
 
         # determine data for input layer
@@ -60,7 +69,7 @@ class CustomEnv(gym.Env):
 
         self.current_step += 1
 
-        return self.state, reward, done, {}
+        return self.state, reward, done, info
 
     def reset(self):
         self.current_step = 0

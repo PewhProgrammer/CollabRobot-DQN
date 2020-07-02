@@ -16,15 +16,22 @@ from datetime import timedelta
 
 
 def baseline():
-    config_name = config.small_room_single_test
-    for i in range(2):
-        i += 3
-        train_single(config.small_room_single, i)
-        test_phase(config.small_room_single_test, i)
+    for i in range(1):
+        # sensor test
+        # train_single(config.small_warehouse_single, i)
+        # test_phase(config.small_warehouse_single_test, i)
 
-    for i in range(5):
-        train_single(config.normal_room_single, i)
-        test_phase(config.normal_room_single_test, i)
+        # run_config(config.small_warehouse_single, config.small_warehouse_single_test
+                   # , "timesteps", 2000000, "experiment_timesteps_2000000", i)
+
+        run_config(config.small_warehouse_single, config.small_warehouse_single_test
+                   , "reward_conf", [1, 10, 10, 2000, 0, 0], "test_pf1_p10_d2000_t2mil_pow1_pSolid", i)
+
+        # run_config(config.small_warehouse_single, config.small_warehouse_single_test
+          #          , "sensor_information", True, "test_pf1_p10_d2000_t2mil_pow0'4_pSolid_sensor", i)
+
+        # run_config(config.small_warehouse_single, config.small_warehouse_single_test
+        #          , "timesteps", 2000000, "experiment_drop_1500_t2000000", i)
 
     # train_multiple("models/tmp_multi_agent_model", 80000)
 
@@ -36,7 +43,8 @@ def train_single(cfg, version, load_model=None):
                     double_q=cfg["double-dqn"],
                     prioritized_replay=cfg["prioritized"],
                     policy_kwargs=dict(dueling=cfg["dueling"]),
-                    tensorboard_log=cfg["study_results"] + "tensorboard/")
+                    exploration_fraction=cfg["exploration_frac"],
+                    tensorboard_log=cfg["study_results"] + "tensorboard/experiments/")
     else:
         model = DQN.load("{}models/single_dqn_transport".format(cfg["study_results"]), env=gym_wrapper)
 
@@ -68,7 +76,7 @@ def test_phase(config_name, version):
     acc_rewards = 0
     completed = 0
 
-    logger.create_new_handler(config_name["study_results"], config_name["experiment_name"])
+    logger.create_new_handler(config_name["study_results"], config_name["experiment_name"], version)
     logger.save_init(gym_wrapper.get_env())
     obs = gym_wrapper.input_data(0)
 
@@ -105,6 +113,17 @@ def test_phase(config_name, version):
     logger.log_json(config_name)
     # f = open("study/algorithm_test/eval-150-cross.log", "w") f.write(serializer.export_dict_to_string("E{}".format(
     # ep_stats))) # use this to store all reward and completion episodes f.close()
+
+
+def run_config(cfg, cfg_test, key, value, name, version):
+    cfg[key] = value
+    cfg["experiment_name"] = name
+
+    cfg_test[key] = value
+    cfg_test["experiment_name"] = name
+
+    train_single(cfg, version)
+    test_phase(cfg_test, version)
 
 
 def main(args):

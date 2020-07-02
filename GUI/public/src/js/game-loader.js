@@ -6,7 +6,7 @@ let max_games_per_episode = 0;
 let game_epoch = 1;
 let pickups = [];
 let dropoffs = [];
-const data = [];
+let data = [];
 let board = [[]];
 let completion_rate = 0
 let sensor = false
@@ -23,8 +23,9 @@ function setup() {
   cv.parent("sketch-holder");
   cv.background(50, 89, 100);
 
-  document.getElementById("log-file").onchange = function() {
+  document.getElementById("log-file").onchange = function () {
     const file = this.files[0];
+    reset_game();
 
     // display file name on input field
     $(`#log-file-label`).html(file.name);
@@ -57,7 +58,7 @@ function setup() {
           let payload = JSON.parse(line);
           // data a new table row
 
-          if(payload.hasOwnProperty('episode')){
+          if (payload.hasOwnProperty('episode')) {
             let tr = $("<tr>");
             tr.append($("<th>").text(`${payload.episode.substr(1)}`));
             tr.append($("<th>").text(`${payload.width}x${payload.height}`));
@@ -70,7 +71,7 @@ function setup() {
             tr.append($("<th>").text(`${payload.acc_rewards}`));
             tr.append($("<th>").text(`${payload.completed}`));
             table.append(tr);
-  
+
             data.push(payload);
           } else {
             completion_rate = payload.completion;
@@ -96,9 +97,11 @@ function setup() {
 
         $("#dataTable").append(table);
 
+
         $("#dataTable").DataTable();
 
-        $("#dataTable tbody").on("click", "tr", function(e) {
+
+        $("#dataTable tbody").on("click", "tr", function (e) {
           episode = $(this)
             .children("th:first")
             .text();
@@ -114,13 +117,13 @@ function setup() {
     });
   };
 
-  document.getElementById("map-file").onchange = function() {
+  document.getElementById("map-file").onchange = function () {
     const file = this.files[0];
     const reader = new FileReader();
     // display file name on input field
     $(`#map-file-label`).html(file.name);
 
-    reader.onload = function(progressEvent) {
+    reader.onload = function (progressEvent) {
       // By lines
       var lines = this.result.split("\n");
       for (let line = 0; line < lines.length; line++) {
@@ -141,12 +144,12 @@ function setup() {
   frameRate(1);
 
   // Update the current slider value (each time you drag the slider handle)
-  slider.oninput = function() {
+  slider.oninput = function () {
     output.innerHTML = this.value;
     setFrameRate(parseInt(this.value));
   };
 
-  $("#stop").click(function() {
+  $("#stop").click(function () {
     stop = !stop;
     if (stop) {
       $("#prev").prop("disabled", false);
@@ -165,10 +168,26 @@ function setup() {
     }
   });
 
-  $("#prev").click(function() {
+  $("#prev").click(function () {
     move = move - 2 < 0 ? 0 : move - 2;
     redraw();
   });
+}
+
+function reset_game() {
+  episode = 0;
+  move = 0;
+  max_games_per_episode = 0;
+  game_epoch = 1;
+  pickups = [];
+  dropoffs = [];
+  data = [];
+  completion_rate = 0
+  sensor = false
+  double_dqn = false
+  dueling_dqn = false
+  prioritized_dqn = false
+  reward_function = "none"
 }
 
 function draw() {
@@ -177,7 +196,7 @@ function draw() {
   background(0, 102, 102);
   fill(255);
   strokeWeight(2);
-  stroke(155,155,155);
+  stroke(155, 155, 155);
   //displayLine();
 
   // TODO: parse the commands
@@ -236,10 +255,10 @@ function init_new_grid(board) {
   x.innerHTML = `Episode: ${board.episode}`;
 
   x = document.getElementsByClassName("reward")[0];
-  x.innerHTML = `Episode Reward: ${Math.round(board.acc_rewards*100)/100}`;
+  x.innerHTML = `Episode Reward: ${Math.round(board.acc_rewards * 100) / 100}`;
 
   var x = document.getElementsByClassName("completion")[0];
-  x.innerHTML = `Completion Rate: ${Math.round(completion_rate*100)/100}`;
+  x.innerHTML = `Completion Rate: ${Math.round(completion_rate * 100) / 100}`;
 
   var x = document.getElementsByClassName("sensor")[0];
   x.innerHTML = `Sensor Information: ${sensor}`;
@@ -250,13 +269,13 @@ function init_new_grid(board) {
   var x = document.getElementsByClassName("ddp")[0];
   x.innerHTML = `double/dueling/prioritized: ${double_dqn}/${dueling_dqn}/${prioritized_dqn}`;
 
-  
+
 }
 
 function create_objectives(board) {
   pickups = [];
   dropoffs = [];
-  dropoffs.push(fill_objective(board.dropoff, "#c3bcc3", "D", adjustedX));
+  dropoffs.push(fill_objective(board.dropoff, "#c3bcc3", "DZONE", adjustedX));
   pickups.push(fill_objective(board.pickup, "#CC6600", "P", adjustedX));
 }
 

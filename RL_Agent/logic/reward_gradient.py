@@ -13,24 +13,24 @@ import math
 
 
 # REWARD FUNCTION
-class Reward_Gradient(object):
+class RewardGradient(object):
 
     # The class "constructor" - It's actually an initializer
-    def __init__(self, grid):
+    def __init__(self, grid, cfg):
         self.grid = grid
-        self.p_reward = 0.1
-        self.p_reward_final = 500
-        self.d_reward = 1
-        self.d_reward_final = 500
-        self.collision_punishment = -15
-        self.default_punishment = 0
+        self.p_reward = cfg["reward_conf"][0]
+        self.p_reward_final = cfg["reward_conf"][1]
+        self.d_reward = cfg["reward_conf"][2]
+        self.d_reward_final = cfg["reward_conf"][3]
+        self.collision_punishment = cfg["reward_conf"][4]
+        self.default_punishment = cfg["reward_conf"][5]
 
     # calculate the points after a move has been made
-    def observe(self, env, agent, actionID):
+    def observe(self, env, agent, actionid):
         # we are using separated reward function
         reward, carrying = self.reward_on_grasping(agent, env)
 
-        punishment = self.punish(agent, actionID)
+        punishment = self.punish(agent, actionid)
 
         if not carrying:
             return punishment + reward, False  # not done yet
@@ -104,10 +104,10 @@ def compute_euc_dist(startX, startY, targetX, targetY):
 
 
 if __name__ == "__main__":
-    d_reward = 15
-    obj_reward_frac = d_reward / 10
-    max_dist = compute_euc_dist(0, 0, 13, 10)
-    dist = compute_euc_dist(2, 5, 3, 5)
-
-    res = obj_reward_frac - (obj_reward_frac * (dist / max_dist))
-    print("reward: {}".format(res))
+    obj_reward_frac = 10
+    max_dist = math.pow(compute_euc_dist(0, 0, 13, 8), 0.4)
+    for i in range(10):
+        i += 2
+        dist = math.pow(compute_euc_dist(1, 1, i, i), 0.4)
+        res = obj_reward_frac - (obj_reward_frac * (dist / max_dist))
+        print("reward: {0} dist: {1}".format(res, i))

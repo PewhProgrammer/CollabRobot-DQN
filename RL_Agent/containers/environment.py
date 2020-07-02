@@ -7,9 +7,11 @@ from containers.objective_manager import Objective_Manager
 
 from common.robot_factory import make_agent, make_dummy
 from logic.reward_static import Reward_Static
-from logic.reward_gradient import Reward_Gradient
+from logic.reward_gradient import RewardGradient
+from logic.reward_custom import RewardGradientCustom
 
 from io_functions.map_reader import load_map
+from containers.grid import Grid
 from common.robot import Movement
 
 
@@ -17,7 +19,8 @@ class Environment(object):
     """MODEL: Environment describing global state information"""
 
     # The class "constructor" - It's actually an initializer
-    def __init__(self, config=None):
+    def __init__(self, config={}):
+
         if config is not None:
             self.config = config
         else:
@@ -25,8 +28,8 @@ class Environment(object):
 
         self.config = config
 
-        self.width = self.config["width"]
-        self.height = self.config["height"]
+        self.width: int = self.config["width"]
+        self.height: int = self.config["height"]
         self.max_euc_dist = math.sqrt(pow(self.width, 2) + pow(self.height, 2))
 
         self.grid = None
@@ -58,7 +61,7 @@ class Environment(object):
             self.objective_manager.check_grasping_objective(self.robots[rID])
         self.last_action = actionID
         pos = agent.move(actionID)
-        if self.grid.check_collision_into_solids(pos):
+        if self.grid.check_collision_into_solids(pos, self.objective_manager.is_grasping_objective(self.robots[rID])):
             agent.reset_position()
 
     def robot_position(self, rID) -> np.array:
@@ -67,7 +70,7 @@ class Environment(object):
 
     def all_agents_position(self):
         agents = self.robot_position(0)
-        for i , robot in self.robots.items():
+        for i, robot in self.robots.items():
             if self.robots[i].isDummy() or i == 0:
                 continue
             agents = np.concatenate((agents, self.robot_position(i)))
@@ -83,6 +86,14 @@ class Environment(object):
 
         return dict
 
+    def reached_pickups(self):
+        # used to log the data inside of game log
+        result = []
+        for _, agent in self.robots.items():
+            result.append(agent.rewarded)
+
+        return result
+
     def reset(self, trial):
         for _, r in self.robots.items():
             r.reset()
@@ -95,7 +106,9 @@ class Environment(object):
         self.grid, objective_list = load_map(path, self.width, self.height)
         self.objective_manager = Objective_Manager(objective_list)
         if "reward" in self.config and self.config["reward"] == "gradient":
-            self.reward_manager = Reward_Gradient(self.grid)
+            self.reward_manager = RewardGradient(self.grid, self.config)
+        elif "reward" in self.config and self.config["reward"] == "custom":
+            self.reward_manager = RewardGradientCustom(self.grid, self.config)
         else:
             self.reward_manager = Reward_Static(self.grid)
 
