@@ -15,12 +15,12 @@ import numpy as np
 class Reward_Static(object):
 
     # The class "constructor" - It's actually an initializer
-    def __init__(self, grid):
+    def __init__(self, grid, cfg):
         self.grid = grid
-        self.p_reward = 5
-        self.d_reward = 15
-        self.collision_punishment = -15
-        self.default_punishment = -0.25
+        self.p_reward = cfg["reward_conf"][1]
+        self.d_reward = cfg["reward_conf"][3]
+        self.collision_punishment = cfg["reward_conf"][4]
+        self.default_punishment = cfg["reward_conf"][5]
 
     # calculate the points after a move has been made
     def observe(self, env, agent, actionID):
@@ -55,10 +55,6 @@ class Reward_Static(object):
 
     def punish(self, agent, actionID):
         punishment = self.default_punishment  # default punishment
-
-        # punish waiting more
-        if actionID == 0:
-            punishment -= 0.2
 
         # check collision
         agent_pos = agent.get_position()

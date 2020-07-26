@@ -35,6 +35,7 @@ class Robot(object):
         self.rewarded = False
         self.id = id
         self.oldPos = (posY, posX)
+        self.collided = False
 
     def wait(self):
         return
@@ -98,6 +99,12 @@ class Robot(object):
         xdiff = newPos[1] - self.oldPos[1]
         return ydiff, xdiff
 
+    def set_collided(self, b):
+        self.collided = b
+
+    def is_collided(self):
+        return self.collided
+
     def get_id(self):
         return self.id
 
@@ -114,7 +121,9 @@ class Robot(object):
     def reset(self):
         self.posX = random.randint(0, self.width - 1)
         self.posY = random.randint(0, self.height - 1)
+        self.oldPos = (self.posY, self.posX)
         self.rewarded = False
+        self.collided = False
 
     def isDummy(self):
         return False

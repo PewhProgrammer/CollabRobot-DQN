@@ -1,5 +1,6 @@
 """Object class for Grid manipulation and shortest path algorithm
 """
+import collections
 
 from common.robot import Robot
 import random
@@ -10,11 +11,12 @@ import numpy as np
 class Grid(object):
 
     # The class "constructor" - It's actually an initializer
-    def __init__(self, grid=[], width= 0, height=0):
+    def __init__(self, grid=[], width=0, height=0):
         self._stored_positions = []
         self._width = width
         self._height = height
         self.data = grid
+        self._wall = '#'
 
     def update(self, robots: [Robot], obj_manager):
         self.reset_grid()
@@ -131,11 +133,11 @@ class Grid(object):
     def check_collision(self, pos):
         self.check_boundary(pos)
 
-        # if agent collided with obstacles and if pickup collided with anything else
+        # if agent collided with obstacles or if pickup collided with anything else
         agent_num = 0
         for i in self.data[pos[0]][pos[1]]:
 
-            if is_number(i):
+            if is_number(i) or i.startswith('H'):
                 agent_num += 1
 
             if i == '#' or agent_num > 1 or (not is_number(i) and i.startswith('P')):  # or i.startswith('X')
@@ -198,6 +200,21 @@ class Grid(object):
 
         return x, y
 
+    # returns path and len of the path
+    def bfs(self, start, goal):
+        queue = collections.deque([[start]])
+        seen = {start}
+        while queue:
+            path = queue.popleft()
+            x, y = path[-1]
+            if self.data[y][x] == goal:
+                return path, len(path) - 1
+            for x2, y2 in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                if 0 <= x2 < self._width and 0 <= y2 < self._height and self.data[y2][x2] != self._wall and (
+                        x2, y2) not in seen:
+                    queue.append(path + [(x2, y2)])
+                    seen.add((x2, y2))
+
 
 def is_number(s):
     try:
@@ -205,3 +222,13 @@ def is_number(s):
         return True
     except ValueError:
         return False
+
+
+if __name__ == "__main__":
+    data = [['.' for i in range(10)] for j in range(10)]
+    data[1][1] = 'D'
+    grid = Grid(data, 10, 10)
+
+    result = grid.bfs((0, 1), 'D')
+
+    print(str(len(result) - 1) + " steps needed")

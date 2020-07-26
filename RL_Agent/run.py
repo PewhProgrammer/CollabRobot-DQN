@@ -14,26 +14,184 @@ import io_functions.game_logger as logger
 from timeit import default_timer as timer
 from datetime import timedelta
 
+import os
+
 
 def baseline():
-    for i in range(1):
+    for i in range(5):
         # sensor test
         # train_single(config.small_warehouse_single, i)
         # test_phase(config.small_warehouse_single_test, i)
 
-        # run_config(config.small_warehouse_single, config.small_warehouse_single_test
-                   # , "timesteps", 2000000, "experiment_timesteps_2000000", i)
+        for i in range(5):
+            run_config(config.wide_room_single, config.wide_room_single_test
+                       , "reward_conf", [0, 5, 0, 15, -15, 0], "experiment_sparse", i)
 
-        run_config(config.small_warehouse_single, config.small_warehouse_single_test
-                   , "reward_conf", [1, 10, 10, 2000, 0, 0], "test_pf1_p10_d2000_t2mil_pow1_pSolid", i)
+        for i in range(5):
+            run_config(config.wide_room_single, config.wide_room_single_test
+                       , "reward_conf", [0, 5, 0, 15, -15, -0.25], "experiment_negative", i)
+
+        for i in range(5):
+            run_config(config.wide_room_single, config.wide_room_single_test
+                       , "reward_conf", [0.05, 150, 10, 2000, 0, 0], "experiment_gradient", i)
 
         # run_config(config.small_warehouse_single, config.small_warehouse_single_test
-          #          , "sensor_information", True, "test_pf1_p10_d2000_t2mil_pow0'4_pSolid_sensor", i)
-
-        # run_config(config.small_warehouse_single, config.small_warehouse_single_test
-        #          , "timesteps", 2000000, "experiment_drop_1500_t2000000", i)
+        #          , "sensor_information", True, "test_pf1_p10_d2000_t2mil_pow0'4_pSolid_sensor", i)
 
     # train_multiple("models/tmp_multi_agent_model", 80000)
+
+
+def run_task_allocation(cfg, cfg_test, runs=20):
+    # change_config(cfg, cfg_test,
+    #               "study_results", "./study/algorithm_test/larger_env/wide_room/")
+
+    # for i in range(runs):
+    #     run_config(cfg, cfg_test
+    #                , "reward_conf", [0, 150, 0, 2000, -15, 0], "experiment_sparse", i)
+    #
+    # for i in range(runs):
+    #     run_config(cfg, cfg_test
+    #                , "reward_conf", [0, 150, 0, 2000, -15, -0.25], "experiment_negative", i)
+
+    for i in range(runs):
+        run_config(cfg, cfg_test
+                   , "reward_conf", [0.05, 150, 10, 2000, 0, 0], "experiment_run", i)
+
+
+def run_reward_function(cfg, cfg_test, runs=20):
+    change_config(cfg, cfg_test,
+                  "study_results", "./study/algorithm_test/larger_env/wide_room/")
+
+    # for i in range(runs):
+    #     run_config(cfg, cfg_test
+    #                , "reward_conf", [0, 150, 0, 2000, -15, 0], "experiment_1mil_sparse", i)
+    #
+    # for i in range(runs):
+    #     run_config(cfg, cfg_test
+    #                , "reward_conf", [0, 150, 0, 2000, -15, -0.25], "experiment_1mil_negative", i)
+
+    for i in range(runs):
+        run_config(cfg, cfg_test
+                   , "reward_conf", [0.05, 150, 10, 2000, 0, 0], "experiment_1mil_gradient", i)
+
+
+def run_double_dueling_prioritized(runs=20):
+    # every variant is turned on
+    for i in range(runs):
+        train_single(config.normal_room_single, i)
+        test_phase(config.normal_room_single_test, i)
+
+    for i in range(runs):
+        run_config(config.normal_room_single, config.normal_room_single_test
+                   , "prioritized", False, "experiment_double-dueling", i)
+
+    change_config(config.normal_room_single, config.normal_room_single_test, "prioritized", True)
+
+    for i in range(runs):
+        run_config(config.normal_room_single, config.normal_room_single_test
+                   , "dueling", False, "experiment_double-prioritized", i)
+
+    change_config(config.normal_room_single, config.normal_room_single_test, "dueling", True)
+
+    for i in range(runs):
+        run_config(config.normal_room_single, config.normal_room_single_test
+                   , "double-dqn", False, "experiment_dueling-prioritized", i)
+
+
+def run_sensor(cfg, cfg_test, runs=20):
+    # test without sensors
+    # for i in range(runs):
+    #     run_config(cfg, cfg_test
+    #                , "reward_conf", [0.05, 150, 10, 2000, 0, 0], "experiment_gradient", i)
+
+    change_config(cfg, cfg_test
+                  , "reward_conf", [0.05, 150, 10, 2000, 0, 0])
+
+    # test with sensors
+    for i in range(runs):
+        run_config(cfg, cfg_test
+                   , "sensor_information", False, "experiment_gradient_sensorOFF", i)
+
+
+def run_collaboration(cfg, cfg_test, runs=20):
+    best_completion = 0
+    best_params = []
+
+    # tmp_completion, param = run_hyperparameter_test(cfg, cfg_test, [0, 5, 0.5], runs, 0, "p_reward")
+    # if tmp_completion > best_completion:
+    #     best_completion = tmp_completion
+    #     best_params = param
+    # tmp_completion, param = run_hyperparameter_test(cfg, cfg_test, [0, 20, 1], runs, 1, "p_reward_final")
+    # if tmp_completion > best_completion:
+    #     best_completion = tmp_completion
+    #     best_params = param
+    # tmp_completion, param = run_hyperparameter_test(cfg, cfg_test, [0, 20, 1], runs, 2, "d_reward")
+    # if tmp_completion > best_completion:
+    #     best_completion = tmp_completion
+    #     best_params = param
+    # tmp_completion, param = run_hyperparameter_test(cfg, cfg_test, [0, 4000, 400], runs, 3, "p_reward_final")
+    # if tmp_completion > best_completion:
+    #     best_completion = tmp_completion
+    #     best_params = param
+    param = [2, 14, 14, 2000, -14, 0]
+    for i in range(runs):
+        tmp_completion = run_config(cfg, cfg_test
+                                    , "reward_conf", param,
+                                    "collab_multiple_best"
+                                    , i, multiple=True,
+                                    model_name="collab_single_best")
+
+        if tmp_completion > best_completion:
+            best_completion = tmp_completion
+            best_params = i
+
+    print("The best completion was {0} at run {1}".format(best_completion, best_params))
+
+
+def run_hyperparameter_test(cfg, cfg_test, interval, runs, parameter, parameter_name):
+    best_completion = 0
+    best_params = []
+    change_config(cfg, cfg_test
+                  , "reward_conf", [1, 150, 10, 2000, 0, 0])
+
+    # hyperparameter check: p_reward_final
+    pun = interval[0]
+    while pun < interval[1]:
+        # [interval0, interval1]
+        pun = round(pun + interval[2], 1)  # steps are interval[2]
+        param = [1, 10, 10, 2000, 0, 0]
+        param[parameter] = pun
+        for i in range(runs):
+            completion_rate = run_config(cfg, cfg_test
+                                         , "reward_conf", param,
+                                         "collab_multiple_"+parameter_name
+                                         , i, multiple=True,
+                                         model_name="collab_single_best")
+
+            if completion_rate > best_completion:
+                print("saved completion " + str(completion_rate))
+                best_completion = completion_rate
+                best_params = param
+
+    return best_completion, best_params
+
+
+def run_dynamic_hindrances(cfg, cfg_test, runs=20):
+    # for j in range(10):
+    #     pun = round((j + 1) * 0.1, 1)
+    #     for i in range(runs):
+    #         run_config(cfg, cfg_test
+    #                    , "reward_conf", [1, 10, 10, 2000, pun, 0], "experiment_nosensor_punish_-" + str(pun), i)
+
+    # change to sensorON
+
+    change_config(cfg, cfg_test, "sensor_information", True)
+
+    for j in range(10):
+        pun = round((j + 1), 1)
+        for i in range(runs):
+            run_config(cfg, cfg_test
+                       , "reward_conf", [1, 10, 10, 2000, pun, 0], "experiment_punish_-" + str(pun), i)
 
 
 def train_single(cfg, version, load_model=None):
@@ -52,22 +210,34 @@ def train_single(cfg, version, load_model=None):
     model.save("{0}models/{2}-v{1}".format(cfg["study_results"], version, cfg["experiment_name"]))
 
 
-def train_multiple(model_name, total_timesteps):
-    gym_wrapper = CustomEnv(config.small_room_single)
-    model_trained = DQN.load("models/single_dqn_transport", env=gym_wrapper)
-    gym_wrapper = MultiAgentCustomEnv(config.small_room_p2_multiple, model_trained)
-    model = DQN(MlpPolicy, gym_wrapper, verbose=1)
-    model.learn(total_timesteps=total_timesteps)
-    model.save(model_name)
+def train_multiple(cfg, version, trained_model):
+    gym_wrapper = CustomEnv(cfg)
+    model_trained = DQN.load("{0}models/{1}".format(cfg["study_results"], trained_model), env=gym_wrapper)
 
-    del model  # remove to demonstrate saving and loading
+    # change config
+    change_config(cfg, None, "agents", 2)
+
+    gym_wrapper = MultiAgentCustomEnv(cfg, model_trained)
+
+    model = DQN(MlpPolicy, gym_wrapper, verbose=1,
+                double_q=cfg["double-dqn"],
+                prioritized_replay=cfg["prioritized"],
+                policy_kwargs=dict(dueling=cfg["dueling"]),
+                exploration_fraction=cfg["exploration_frac"],
+                tensorboard_log=cfg["study_results"] + "tensorboard/experiments/")
+
+    model.learn(total_timesteps=cfg["timesteps"], tb_log_name=cfg["experiment_name"])
+    model.save("{0}models/{2}-v{1}".format(cfg["study_results"], version, cfg["experiment_name"]))
 
 
-def test_phase(config_name, version):
-    # model_trained = DQN.load("models/single_dqn_transport", env=CustomEnv(config.small_room_single))
-    # gym_wrapper = MultiAgentCustomEnv(config.small_room_p2_multiple, model_trained)
+def test_phase(config_name, version, trained_model=None, multi=False):
+    if multi:
+        gym_wrapper = CustomEnv(config_name)
+        model_trained = DQN.load("{0}models/{1}".format(config_name["study_results"], trained_model), env=gym_wrapper)
+        gym_wrapper = MultiAgentCustomEnv(config_name, model_trained)
+    else:
+        gym_wrapper = CustomEnv(config_name)
 
-    gym_wrapper = CustomEnv(config_name)
     model = DQN.load("{0}models/{2}-v{1}".format(config_name["study_results"], version, config_name["experiment_name"]),
                      env=gym_wrapper)
 
@@ -75,6 +245,7 @@ def test_phase(config_name, version):
     episode = 0
     acc_rewards = 0
     completed = 0
+    collided = 0
 
     logger.create_new_handler(config_name["study_results"], config_name["experiment_name"], version)
     logger.save_init(gym_wrapper.get_env())
@@ -99,6 +270,8 @@ def test_phase(config_name, version):
             ep_stats[episode] = (acc_rewards, finished)
             if finished:
                 completed += 1
+                if env.get_agent().is_collided():
+                    collided += 1
             gym_wrapper.reset()
             logger.save_init(env)
 
@@ -109,21 +282,35 @@ def test_phase(config_name, version):
     # append end state information to log file
 
     print("Completion rate: {}".format(completed / episode))
+    print("Collision rate: {}".format(collided / episode))
     config_name["completion"] = completed / episode
+    config_name["collided"] = collided / episode
     logger.log_json(config_name)
     # f = open("study/algorithm_test/eval-150-cross.log", "w") f.write(serializer.export_dict_to_string("E{}".format(
     # ep_stats))) # use this to store all reward and completion episodes f.close()
 
+    return config_name["completion"]
 
-def run_config(cfg, cfg_test, key, value, name, version):
-    cfg[key] = value
+
+def run_config(cfg, cfg_test, key, value, name, version, multiple=False, model_name=""):
+    change_config(cfg, cfg_test, key, value)
     cfg["experiment_name"] = name
-
-    cfg_test[key] = value
     cfg_test["experiment_name"] = name
 
-    train_single(cfg, version)
-    test_phase(cfg_test, version)
+    if multiple:
+        change_config(cfg, cfg_test, "agents", 2)
+        change_config(cfg, cfg_test, "p_weight", 2)
+        train_multiple(cfg, version, model_name)
+        return test_phase(cfg_test, version, trained_model=model_name, multi=multiple)
+    else:
+        train_single(cfg, version)
+        return test_phase(cfg_test, version)
+
+
+def change_config(cfg, cfg_test=None, key=None, value=None):
+    cfg[key] = value
+    if cfg_test is not None:
+        cfg_test[key] = value
 
 
 def main(args):
@@ -134,10 +321,18 @@ def main(args):
 
 
 if __name__ == '__main__':
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
     start = timer()
 
     # main(parse_arguments(sys.argv[1:]))
-    baseline()
+    # baseline()
+    # run_double_dueling_prioritized(runs=15)
+    # run_reward_function(config.wide_room_single, config.wide_room_single_test, runs=20)
+    # run_sensor(config.wide_room_single, config.wide_room_single_test, runs=1)
+
+    # run_dynamic_hindrances(config.small_room_single, config.small_room_single_test, runs=1)
+    # run_task_allocation(config.normal_room_single, config.normal_room_single_test, runs=5)
+    run_collaboration(config.small_room_single, config.small_room_single_test, runs=5)
 
     end = timer()
     print("Elapsed time: {}".format(timedelta(seconds=end - start)))

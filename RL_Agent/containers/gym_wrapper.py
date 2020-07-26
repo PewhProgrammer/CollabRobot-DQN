@@ -14,7 +14,7 @@ class CustomEnv(gym.Env):
         super(CustomEnv, self).__init__()
 
         self.config = config
-        config["agents"] = 1
+        self.config["agents"] = 1
         ep_length = config["ep_length"]
         self.env = Environment(config=config)
         self.env_size = (config["width"], config["height"])
@@ -49,10 +49,12 @@ class CustomEnv(gym.Env):
 
     def step(self, action):
 
+        agent = self.env.robots[0]
+
         self.env.move_robots(action, 0)
         self.env.move_objectives(0)
         self.env.update_grid()
-        reward, done = self.env.reward_manager.observe(self.env, self.env.robots[0],
+        reward, done = self.env.reward_manager.observe(self.env, agent,
                                                        action)  # check if pickup and dropoff is successful
 
         info = {}
@@ -61,6 +63,12 @@ class CustomEnv(gym.Env):
             info["is_success"] = 1
         elif self.current_step >= self.ep_length:
             info["is_success"] = 0
+
+        if done or self.current_step >= self.ep_length:
+            if agent.is_collided():
+                info["is_collision"] = 1
+            else:
+                info["is_collision"] = 0
 
         done = self.current_step >= self.ep_length or done
 

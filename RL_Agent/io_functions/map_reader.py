@@ -3,7 +3,7 @@ from containers.grid import Grid
 import numpy as np
 
 
-def load_map(filepath, width, height):
+def load_map(filepath, width, height, w = 1):
     grid_array = [[[] for x in range(width)] for y in range(height)]
 
     objectives = {}
@@ -45,7 +45,7 @@ def load_map(filepath, width, height):
 
     if len(objectives) == 0:
         # lack of objective; generate randoms
-        weight = 1  # need 2 agents to carry
+        weight = w  # need 2 agents to carry
         x, y = grid_obj.calculate_random_pos()  # pickup
         x1, y1 = x, y
         while x == x1 and y == y1:
@@ -55,12 +55,12 @@ def load_map(filepath, width, height):
     return grid_obj, objectives
 
 
-def create_test_maps(map_path):
+def create_test_maps(map_path,w,h):
     # generate some maps for me
 
     for i in range(150):
         f = open("{}v{}.map".format(map_path, i), "w")
-        grid, obj = load_map("{}empty.map".format(map_path), 13, 8)
+        grid, obj = load_map("{}empty.map".format(map_path), w,h)
         row, column = len(grid.data), len(grid.data[0])
 
         p_pos, d_pos = obj[0].get_pickup_pos(), obj[0].get_dropoff_pos()
@@ -90,5 +90,5 @@ def test_sensoric_distance_calculation(map_path):
 
 
 if __name__ == "__main__":
-    create_test_maps("../maps/small_warehouse/")
+    create_test_maps("../maps/wide_room/", 16, 16)
     # test_sensoric_distance_calculation("../maps/small_room/")

@@ -77,6 +77,9 @@ class Environment(object):
 
         return agents
 
+    def get_agent(self):
+        return self.robots[0]
+
     def robot_positions(self):
         dict = []
 
@@ -103,14 +106,14 @@ class Environment(object):
             path = "{}v{}.map".format(self.config["map"][0], map_version)
         else:
             path = self.config["map"][0]
-        self.grid, objective_list = load_map(path, self.width, self.height)
+        self.grid, objective_list = load_map(path, self.width, self.height, self.config["p_weight"])
         self.objective_manager = Objective_Manager(objective_list)
         if "reward" in self.config and self.config["reward"] == "gradient":
             self.reward_manager = RewardGradient(self.grid, self.config)
         elif "reward" in self.config and self.config["reward"] == "custom":
             self.reward_manager = RewardGradientCustom(self.grid, self.config)
         else:
-            self.reward_manager = Reward_Static(self.grid)
+            self.reward_manager = Reward_Static(self.grid, self.config)
 
         self.robots = {}
 

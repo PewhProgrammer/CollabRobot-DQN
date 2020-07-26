@@ -12,6 +12,7 @@ import numpy as np
 import math
 
 from common.robot import Movement
+from logic.reward_gradient import compute_euc_dist
 
 
 ## CHANGE LOG
@@ -62,8 +63,8 @@ class RewardGradientCustom(object):
             obj_reward_fraction = self.d_reward
 
         # compute euclidean distance
-        euc_dist = math.pow(compute_euc_dist(x1, y1, x2, y2), 1)
-        return obj_reward_fraction - (obj_reward_fraction * (euc_dist / math.pow(max_dist, 1)))
+        euc_dist = math.pow(compute_euc_dist(x1, y1, x2, y2), 0.4)
+        return obj_reward_fraction - (obj_reward_fraction * (euc_dist / math.pow(max_dist, 0.4)))
 
     def reward_on_grasping(self, agent, env, action_id):
         obj_manager = env.objective_manager
@@ -108,11 +109,6 @@ class RewardGradientCustom(object):
         if collision:
             return self.collision_punishment
         return 0
-
-
-def compute_euc_dist(startX, startY, targetX, targetY):
-    # compute euclidean distance
-    return math.sqrt(pow(startX - targetX, 2) + pow(startY - targetY, 2))
 
 
 if __name__ == "__main__":
