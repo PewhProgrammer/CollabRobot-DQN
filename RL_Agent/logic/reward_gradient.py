@@ -9,6 +9,7 @@ How the rewards are aggregated:
 """
 
 import numpy as np
+from common.robot import Movement
 import math
 
 
@@ -26,17 +27,17 @@ class RewardGradient(object):
         self.default_punishment = cfg["reward_conf"][5]
 
     # calculate the points after a move has been made
-    def observe(self, env, agent, actionid):
+    def observe(self, env, agent, actionID):
         # we are using separated reward function
-        reward, carrying = self.reward_on_grasping(agent, env)
+        reward, carrying = self.reward_on_grasping(agent, env, actionID)
 
-        punishment = self.punish(agent, actionid)
+        punishment = self.punish(agent, actionID)
 
         if not carrying:
             return punishment + reward, False  # not done yet
 
         # check if the agent has reached the dropoff area
-        single_r, done = self.reward_on_dropoff(agent, env)
+        single_r, done = self.reward_on_dropoff(agent, env, actionID)
         reward += single_r
 
         return reward + punishment, done  # done if pickup is on dropoff
@@ -55,45 +56,51 @@ class RewardGradient(object):
             obj_reward_fraction = self.d_reward
 
         # compute euclidean distance
-        euc_dist = math.pow(compute_euc_dist(x1, y1, x2, y2), 1.4)
+        euc_dist = math.pow(compute_euc_dist(x1, y1, x2, y2), 0.4)
+        return obj_reward_fraction - (obj_reward_fraction * (euc_dist / math.pow(max_dist, 0.4)))
 
-        return obj_reward_fraction - (obj_reward_fraction * (euc_dist / math.pow(max_dist, 1.4)))
-
-    def reward_on_grasping(self, agent, env):
+    def reward_on_grasping(self, agent, env, action_id):
         obj_manager = env.objective_manager
+
         # checks if the agent receives the carrier or not
         if agent.id in obj_manager.get_robot_objective_dict():
             result = 0 if agent.rewarded else self.p_reward_final, True
             agent.rewarded = True
-        else:
-            result = self.reward_on_distance(agent, obj_manager, env.max_euc_dist), False
+            return result
 
-        return result
+        if action_id == Movement.GRASP.value:  # or agent.is_stuck(action_id):
+            return 0, False
 
-    def reward_on_dropoff(self, agent, env):
+        return self.reward_on_distance(agent, obj_manager, env.max_euc_dist), False
+
+    def reward_on_dropoff(self, agent, env, action_id):
         obj_manager = env.objective_manager
         if self.grid.check_pickup_delivery(agent.id, obj_manager):
             return self.d_reward_final, True
 
+        if action_id == Movement.GRASP.value:  # or agent.is_stuck(action_id):
+            return 0, False
+
         return self.reward_on_distance(agent, obj_manager, env.max_euc_dist, pickup=False), False
 
-    def punish(self, agent, actionID):
+    def punish(self, agent, action_id):
         punishment = self.default_punishment  # default punishment
 
         # punish for being stuck
-        if agent.is_stuck(actionID):
-            punishment += self.collision_punishment
+        # if agent.is_stuck(action_id):
+        #     punishment += self.collision_punishment
 
         # check collision
-        agent_pos = agent.get_position()
-        punishment += self.punish_collision(agent_pos)
+        punishment += self.punish_collision(agent)
 
         return punishment  # / (env_size[0] * env_size[1])
 
-    def punish_collision(self, agent_pos):
+    def punish_collision(self, agent):
+        agent_pos = agent.get_position()
         collision = self.grid.check_collision(agent_pos)
 
         if collision:
+            agent.set_collided(True)
             return self.collision_punishment
         return 0
 

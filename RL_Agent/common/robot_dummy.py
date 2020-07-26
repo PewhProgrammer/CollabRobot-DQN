@@ -16,7 +16,7 @@ class RobotDummy(Robot):
         super().__init__(id, posX, posY, width, height, diameter, speed)
 
     def move(self):
-        return super().move(random.randrange(6))
+        return super().move(random.randrange(5))
 
     def isDummy(self):
         return True

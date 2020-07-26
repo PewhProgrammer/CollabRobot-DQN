@@ -44,16 +44,20 @@ small_room_single = {
     "map": ["maps/small_room/empty.map", 1],
     "agents": 1,
     "dummies": 0,
+    "p_weight": 1,
     "observation_space": 7,
     "reward": "gradient",
-    "reward_conf": [0.1, 500, 1, 500, -15, 0],
-    "sensor_information": False,
-    "timesteps": 500000,
+    # "reward_conf": [0.05, 500, 1, 500, -15, 0],
+    "reward_conf": [1, 10, 10, 2000, 0, 0],
+    "sensor_information": True,
+    "timesteps": 3000000,
+    "ep_length": 50,
     "prioritized": True,
     "dueling": True,
     "double-dqn": True,
-    "study_results": "./study/algorithm_test/concept-1/small_empty/",
-    "experiment_name": "steps-500000"
+    "exploration_frac": 0.1,
+    "study_results": "./study/algorithm_test/concept-4/small_room/",
+    "experiment_name": "experiment"
 }
 
 small_room_single_test = {**small_room_single, 'map': ["maps/small_room/", 150]}
@@ -65,16 +69,20 @@ normal_room_single = {
     "map": ["maps/normal_room/empty.map", 1],
     "agents": 1,
     "dummies": 0,
+    "p_weight": 2,
     "observation_space": 7,
-    "reward": "gradient",
-    "reward_conf": [0.1, 500, 1, 500, -15, 0],
+    "reward": "static",
+    # "reward_conf": [0.05, 500, 1, 500, -15, 0],
+    "reward_conf": [0, 5, 0, 15, -15, 0],
     "sensor_information": False,
-    "timesteps": 800000,
+    "timesteps": 500000,
+    "ep_length": 50,
     "prioritized": True,
     "dueling": True,
     "double-dqn": True,
-    "study_results": "./study/algorithm_test/concept-1/normal_empty/",
-    "experiment_name": "steps-700000"
+    "exploration_frac": 0.1,
+    "study_results": "./study/algorithm_test/concept-3/normal_room/",
+    "experiment_name": "experiment_double-dueling-prioritized"
 }
 
 normal_room_single_test = {**normal_room_single, 'map': ["maps/normal_room/", 150]}
@@ -85,11 +93,24 @@ wide_room_single = {
     "height": 16,
     "map": ["maps/wide_room/empty.map", 1],
     "agents": 1,
-    "dummies": 4,
+    "dummies": 0,
+    "p_weight": 1,
     "observation_space": 7,
     "reward": "gradient",
-    "sensor_information": True
+    # "reward_conf": [0.05, 500, 1, 500, -15, 0],
+    "reward_conf": [1, 10, 10, 2000, 0, 0],
+    "sensor_information": False,
+    "timesteps": 250000,
+    "ep_length": 50,
+    "prioritized": True,
+    "dueling": True,
+    "double-dqn": True,
+    "exploration_frac": 0.1,
+    "study_results": "./study/algorithm_test/sensor/wide_room/",
+    "experiment_name": "experiment"
 }
+
+wide_room_single_test = {**wide_room_single, 'map': ["maps/wide_room/", 150]}
 
 narrow_passages_single = {
     "id": 4,
@@ -98,9 +119,23 @@ narrow_passages_single = {
     "map": ["maps/narrow_passages/empty.map", 1],
     "agents": 1,
     "dummies": 0,
+    "p_weight": 1,
     "observation_space": 7,
-    "reward": "gradient"
+    "reward": "custom",
+    # "reward_conf": [0.05, 500, 1, 500, -15, 0],
+    "reward_conf": [1, 10, 10, 2000, 0, 0],
+    "sensor_information": False,
+    "timesteps": 500000,
+    "ep_length": 50,
+    "prioritized": True,
+    "dueling": True,
+    "double-dqn": True,
+    "exploration_frac": 0.1,
+    "study_results": "./study/algorithm_test/concept-1/small_narrow/",
+    "experiment_name": "experiment"
 }
+
+narrow_passages_single_test = {**narrow_passages_single, 'map': ["maps/narrow_passages/", 150]}
 
 small_warehouse_single = {
     "id": 5,
@@ -109,18 +144,19 @@ small_warehouse_single = {
     "map": ["maps/small_warehouse/empty.map", 1],
     "agents": 1,
     "dummies": 0,
+    "p_weight": 1,
     "observation_space": 7,
-    "reward": "custom",
+    "reward": "gradient",
     # "reward_conf": [0.05, 500, 1, 500, -15, 0],
     "reward_conf": [1, 10, 10, 2000, 0, 0],
-    "sensor_information": False,
-    "timesteps": 2000000,
+    "sensor_information": True,
+    "timesteps": 500000,
     "ep_length": 50,
     "prioritized": True,
     "dueling": True,
     "double-dqn": True,
     "exploration_frac": 0.1,
-    "study_results": "./study/algorithm_test/concept-1/small_warehouse/",
+    "study_results": "./study/algorithm_test/concept-2/small_warehouse/",
     "experiment_name": "experiment"
 }
 
