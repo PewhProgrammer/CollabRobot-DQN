@@ -24,7 +24,7 @@ def reward_functions_plot_swarm(file_path):
     df = pd.DataFrame(records)
 
     sns.set(style="whitegrid", color_codes=True)
-    ax = sns.swarmplot(x="class", y="acc_reward", data=df)
+    ax = sns.swarmplot(x="class", y="acc_reward", data=df, order=["not completed", "completed"])
     plt.ylabel('accumulated rewards')
     plt.xlabel('')
     plt.show()
@@ -64,5 +64,5 @@ def average_plot(PATH):
 
 
 if __name__ == "__main__":
-    # reward_functions_plot_swarm("../data/session_02.06/time-2230.log")
-    average_plot("../study/algorithm_test/double_dueling_prioritized/data/")
+    reward_functions_plot_swarm("../study/reward_abuse/gradient_increase+.log")
+    # average_plot("../study/algorithm_test/double_dueling_prioritized/data/")
