@@ -28,7 +28,7 @@ def reward_functions_plot_swarm(file_path):
     df = pd.DataFrame(records)
 
     sns.set(style="whitegrid", color_codes=True)
-    ax = sns.swarmplot(x="class", y="acc_reward", data=df)
+    ax = sns.swarmplot(x="class", y="acc_reward", data=df, order=["not completed", "completed"])
     plt.ylabel('accumulated rewards')
     plt.xlabel('')
     plt.show()
