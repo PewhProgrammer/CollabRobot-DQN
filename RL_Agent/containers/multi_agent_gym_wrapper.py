@@ -10,12 +10,13 @@ class MultiAgentCustomEnv(gym.Env):
     """Custom Environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, config=None, model_trained=None, ep_length: int = 50):
+    def __init__(self, config=None, model_trained=None, single= True, ep_length: int = 50):
         super(MultiAgentCustomEnv, self).__init__()
 
         self.config = config
         config["agents"] = 2
 
+        self.single_trained = single
         self.model_trained = model_trained
         self.env = Environment(config=config)
         # raise AttributeError("One must supply either a maze_file path (str) or the maze_size (tuple of length 2)")
@@ -62,7 +63,10 @@ class MultiAgentCustomEnv(gym.Env):
 
     def step(self, action):
         # TODO: change rID architecutre
-        obs = self.observation_single(1)
+        if self.single_trained:
+            obs = self.observation_single(1)
+        else:
+            obs = self.input_data(1)
         action2, _ = self.model_trained.predict(obs)
 
         agent1_grasping = self.env.objective_manager.has_pickup(0)
@@ -119,7 +123,6 @@ class MultiAgentCustomEnv(gym.Env):
         return self.state  # reward, done, info can't be included
 
     # scheme: agent pos, pickup pos, dropoff pos, carrying
-
     def input_data(self, robotID):
         data = self.env.all_agents_position(), \
                self.env.objective_manager.pickup_get_positions_np(), \
@@ -132,16 +135,19 @@ class MultiAgentCustomEnv(gym.Env):
 
         if self.config["distance_information"]:
             # compute the distance to the pickup object
-            tmp = list(data) + self.env.grid.get_distance_to_pickup(
+            tmp = list(data)
+            tmp.append(self.env.grid.get_distance_to_pickup(
                 self.env.robot_position(robotID),
                 self.env.objective_manager.pickup_get_positions_np()
-            )
+            ))
             data = tuple(tmp)
+
             # Partners distance
-            tmp = list(data) + self.env.grid.get_distance_to_pickup(
-                self.env.robot_position(robotID),
+            tmp = list(data)
+            tmp.append(self.env.grid.get_distance_to_pickup(
+                self.env.robot_position(0 if robotID == 1 else 1),
                 self.env.objective_manager.pickup_get_positions_np()
-            )
+            ))
             data = tuple(tmp)
 
         shape = np.concatenate(data, axis=None)
