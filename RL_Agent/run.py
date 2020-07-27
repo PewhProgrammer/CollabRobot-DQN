@@ -139,10 +139,10 @@ def run_collaboration(cfg, cfg_test, runs=20):
     for i in range(runs):
         tmp_completion = run_config(cfg, cfg_test
                                     , "reward_conf", param,
-                                    "collab_multiple_proto"
-                                    , i, mode="multiple",
-                                    model_name="best_models/collab_single_best")
-                                    #model_name="best_models/collab_multiple_best-v0")
+                                    "collab_single_proto"
+                                    , i, mode="task_allocation",
+                                    model_name="best_models/collab_single_bad")
+        # model_name="best_models/collab_multiple_best-v0")
 
         if tmp_completion > best_completion:
             best_completion = tmp_completion
@@ -221,7 +221,7 @@ def train_multiple(cfg, version, trained_model, double_agent=False):
         model_trained = DQN.load("{0}models/{1}".format(cfg["study_results"], trained_model), env=gym_wrapper)
     else:
         gym_wrapper = CustomEnv(cfg)
-        #model_trained = DQN.load("{0}models/{1}".format("./", trained_model), env=gym_wrapper)
+        # model_trained = DQN.load("{0}models/{1}".format("./", trained_model), env=gym_wrapper)
         model_trained = DQN.load("{0}models/{1}".format(cfg["study_results"], trained_model), env=gym_wrapper)
 
     # change config
@@ -240,7 +240,7 @@ def train_multiple(cfg, version, trained_model, double_agent=False):
     model.save("{0}models/{2}-v{1}".format(cfg["study_results"], version, cfg["experiment_name"]))
 
 
-def test_phase(config_name, version, trained_model=None, multi=False, double_agent= False):
+def test_phase(config_name, version, trained_model=None, multi=False, double_agent=False):
     if double_agent:
         gym_wrapper = MultiAgentCustomEnv(config_name)
         # model_trained = DQN.load("{0}models/{1}".format("./", trained_model), env=gym_wrapper)
@@ -315,9 +315,10 @@ def run_config(cfg, cfg_test, key, value, name, version, mode="single", model_na
     if mode == "multiple":
         change_config(cfg, cfg_test, "agents", 2)
         change_config(cfg, cfg_test, "p_weight", 2)
+        change_config(cfg, cfg_test, "sensor_information", True)
         change_config(cfg, cfg_test, "study_results", "./study/algorithm_test/concept-4/small_room/")
         train_multiple(cfg, version, model_name, double_agent=False)
-        return test_phase(cfg_test, version, trained_model=model_name, multi=True,  double_agent=False)
+        return test_phase(cfg_test, version, trained_model=model_name, multi=True, double_agent=False)
     elif mode == "task_allocation":
         change_config(cfg, cfg_test, "agents", 2)
         change_config(cfg, cfg_test, "p_weight", 1)
@@ -355,8 +356,8 @@ if __name__ == '__main__':
     # run_sensor(config.wide_room_single, config.wide_room_single_test, runs=1)
 
     # run_dynamic_hindrances(config.small_room_single, config.small_room_single_test, runs=1)
-    # run_task_allocation(config.small_room_single, config.small_room_single_test, runs=5)
-    run_collaboration(config.small_room_single, config.small_room_single_test, runs=2)
+    run_task_allocation(config.small_room_single, config.small_room_single_test, runs=1)
+    # run_collaboration(config.small_room_single, config.small_room_single_test, runs=2)
 
     end = timer()
     print("Elapsed time: {}".format(timedelta(seconds=end - start)))

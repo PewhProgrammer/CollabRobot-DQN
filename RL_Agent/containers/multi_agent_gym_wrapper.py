@@ -10,7 +10,7 @@ class MultiAgentCustomEnv(gym.Env):
     """Custom Environment that follows gym interface"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, config=None, model_trained=None, single= True, ep_length: int = 50):
+    def __init__(self, config=None, model_trained=None, single=True, ep_length: int = 50):
         super(MultiAgentCustomEnv, self).__init__()
 
         self.config = config
@@ -39,7 +39,7 @@ class MultiAgentCustomEnv(gym.Env):
             self.N_DISCRETE_OBSERVATION_SINGLE += 8
 
         if self.config["distance_information"]:
-            self.N_DISCRETE_OBSERVATION += 2 # only for learning partner
+            self.N_DISCRETE_OBSERVATION += 2  # only for learning partner
 
         # shape = shape.reshape(1, self.N_DISCRETE_OBSERVATION)
 
@@ -72,8 +72,30 @@ class MultiAgentCustomEnv(gym.Env):
         agent1_grasping = self.env.objective_manager.has_pickup(0)
         agent2_grasping = self.env.objective_manager.has_pickup(1)
         carried = agent1_grasping and agent2_grasping
-        nullify_reward = 1
 
+        if self.config["distance_information"]:
+            reward, done = self.update_allocation(action, action2, carried, agent1_grasping, agent2_grasping)
+        else:
+            reward, done = self.update_collaboration(action, action2, carried, agent1_grasping, agent2_grasping)
+
+        info = {}
+        if done:
+            self.successes += 1
+            info["is_success"] = 1
+        elif self.current_step >= self.ep_length:
+            info["is_success"] = 0
+
+        done = self.current_step >= self.ep_length or done
+
+        # determine data for input layer
+        self.state = self.input_data(0)
+
+        self.current_step += 1
+
+        return self.state, reward, done, info
+
+    def update_collaboration(self, action, action2, carried, agent1_grasping, agent2_grasping):
+        nullify_reward = 1
         if carried and action2 == action:
             self.env.move_robots(action, 0)
             self.env.move_robots(action2, 1)
@@ -96,21 +118,24 @@ class MultiAgentCustomEnv(gym.Env):
         # nullify the reward if action differs during carrying in multiple setup
         reward *= nullify_reward
 
-        info = {}
-        if done:
-            self.successes += 1
-            info["is_success"] = 1
-        elif self.current_step >= self.ep_length:
-            info["is_success"] = 0
+        return reward, done
 
-        done = self.current_step >= self.ep_length or done
+    def update_allocation(self, action, action2, carried, agent1_grasping, agent2_grasping):
+        nullify_reward = 1
 
-        # determine data for input layer
-        self.state = self.input_data(0)
+        self.env.move_robots(action, 0)
+        self.env.move_robots(action2, 1)
+        self.env.move_objectives(0)
+        self.env.update_grid()
+        reward, done = self.env.reward_manager.observe(self.env, self.env.robots[0],
+                                                       action)
 
-        self.current_step += 1
+        if self.env.robots[0].dist_to_pickup > self.env.robots[1].dist_to_pickup:
+            nullify_reward = 0
+        # nullify the reward if action differs during carrying in multiple setup
+        reward *= nullify_reward
 
-        return self.state, reward, done, info
+        return reward, done
 
     def reset(self):
         self.current_step = 0
@@ -136,18 +161,9 @@ class MultiAgentCustomEnv(gym.Env):
         if self.config["distance_information"]:
             # compute the distance to the pickup object
             tmp = list(data)
-            tmp.append(self.env.grid.get_distance_to_pickup(
-                self.env.robot_position(robotID),
-                self.env.objective_manager.pickup_get_positions_np()
-            ))
-            data = tuple(tmp)
-
-            # Partners distance
-            tmp = list(data)
-            tmp.append(self.env.grid.get_distance_to_pickup(
-                self.env.robot_position(0 if robotID == 1 else 1),
-                self.env.objective_manager.pickup_get_positions_np()
-            ))
+            tmp.append(self.env.robots[robotID].dist_to_pickup)
+            # partners initial distance to pickup
+            tmp.append(self.env.robots[0 if robotID == 1 else 1].dist_to_pickup)
             data = tuple(tmp)
 
         shape = np.concatenate(data, axis=None)

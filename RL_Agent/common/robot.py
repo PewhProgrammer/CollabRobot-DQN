@@ -36,6 +36,7 @@ class Robot(object):
         self.id = id
         self.oldPos = (posY, posX)
         self.collided = False
+        self.dist_to_pickup = -1
 
     def wait(self):
         return
@@ -124,6 +125,7 @@ class Robot(object):
         self.oldPos = (self.posY, self.posX)
         self.rewarded = False
         self.collided = False
+        self.dist_to_pickup = -1
 
     def isDummy(self):
         return False

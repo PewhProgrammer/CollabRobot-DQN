@@ -124,7 +124,14 @@ class Environment(object):
             i += self.config["agents"]
             self.robots["H" + str(i)] = make_dummy(i, self.grid, width=self.width, height=self.height)
 
+        self.update_grid()
+
+        # add distance to pickup for each agent
+        if self.config["distance_information"]:
+            for i, agent in self.robots.items():
+                agent.dist_to_pickup = self.grid.get_distance_to_pickup(
+                    self.robot_position(i)
+                )
+
         # reset means new start of episode
         self.episode = trial
-
-        self.update_grid()
