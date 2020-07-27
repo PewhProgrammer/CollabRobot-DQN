@@ -49,11 +49,20 @@ class Objective_Manager(object):
 
     def check_grasping_objective(self, robot):
         rY, rX = robot.get_position()
-        pY, pX = self._objectives_dict[0].get_pickup_pos()
+        obj = self._objectives_dict[0]  # always take the first pickup
+        pY, pX = obj.get_pickup_pos()
+
+        # check the weight
+        w = obj.get_weight()
 
         det = abs(rY - pY) + abs(rX - pX)
         if det == 1:
             # TODO: check from which position
+            if robot.get_id() in self._robot_objectives_dict:
+                return True
+            if len(self._robot_objectives_dict) >= w:
+                # too many agents already grasping
+                return False
             self._robot_objectives_dict[robot.get_id()] = 0
             return True
 

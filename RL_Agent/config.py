@@ -50,13 +50,14 @@ small_room_single = {
     # "reward_conf": [0.05, 500, 1, 500, -15, 0],
     "reward_conf": [1, 10, 10, 2000, 0, 0],
     "sensor_information": True,
-    "timesteps": 3000000,
+    "distance_information": True,
+    "timesteps": 100000,
     "ep_length": 50,
     "prioritized": True,
     "dueling": True,
     "double-dqn": True,
     "exploration_frac": 0.1,
-    "study_results": "./study/algorithm_test/concept-4/small_room/",
+    "study_results": "./study/algorithm_test/concept-3/small_room/",
     "experiment_name": "experiment"
 }
 

@@ -37,6 +37,9 @@ class MultiAgentCustomEnv(gym.Env):
             self.N_DISCRETE_OBSERVATION += 8
             self.N_DISCRETE_OBSERVATION_SINGLE += 8
 
+        if self.config["distance_information"]:
+            self.N_DISCRETE_OBSERVATION += 2 # only for learning partner
+
         # shape = shape.reshape(1, self.N_DISCRETE_OBSERVATION)
 
         # Example when using discrete actions:
@@ -125,6 +128,20 @@ class MultiAgentCustomEnv(gym.Env):
 
         if self.config["sensor_information"]:
             tmp = list(data) + self.env.grid.get_sensoric_distance(self.env.robot_position(robotID))
+            data = tuple(tmp)
+
+        if self.config["distance_information"]:
+            # compute the distance to the pickup object
+            tmp = list(data) + self.env.grid.get_distance_to_pickup(
+                self.env.robot_position(robotID),
+                self.env.objective_manager.pickup_get_positions_np()
+            )
+            data = tuple(tmp)
+            # Partners distance
+            tmp = list(data) + self.env.grid.get_distance_to_pickup(
+                self.env.robot_position(robotID),
+                self.env.objective_manager.pickup_get_positions_np()
+            )
             data = tuple(tmp)
 
         shape = np.concatenate(data, axis=None)

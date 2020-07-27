@@ -117,6 +117,10 @@ class Grid(object):
 
         return sensor_list
 
+    def get_distance_to_pickup(self, pos, pickup):
+        lol, dist = self.bfs((pos[1], pos[0]), 'P0')
+        return dist
+
     def check_pickup_delivery(self, agentID, obj_manager):
         """
         looks if agentPos in grid has pickup and dropoff object
@@ -207,7 +211,7 @@ class Grid(object):
         while queue:
             path = queue.popleft()
             x, y = path[-1]
-            if self.data[y][x] == goal:
+            if goal in self.data[y][x]:
                 return path, len(path) - 1
             for x2, y2 in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
                 if 0 <= x2 < self._width and 0 <= y2 < self._height and self.data[y2][x2] != self._wall and (

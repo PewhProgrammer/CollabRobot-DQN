@@ -42,20 +42,22 @@ def baseline():
 
 
 def run_task_allocation(cfg, cfg_test, runs=20):
-    # change_config(cfg, cfg_test,
-    #               "study_results", "./study/algorithm_test/larger_env/wide_room/")
+    best_completion = 0
+    best_params = []
 
-    # for i in range(runs):
-    #     run_config(cfg, cfg_test
-    #                , "reward_conf", [0, 150, 0, 2000, -15, 0], "experiment_sparse", i)
-    #
-    # for i in range(runs):
-    #     run_config(cfg, cfg_test
-    #                , "reward_conf", [0, 150, 0, 2000, -15, -0.25], "experiment_negative", i)
-
+    param = [2, 14, 14, 2000, -14, 0]
     for i in range(runs):
-        run_config(cfg, cfg_test
-                   , "reward_conf", [0.05, 150, 10, 2000, 0, 0], "experiment_run", i)
+        tmp_completion = run_config(cfg, cfg_test
+                                    , "reward_conf", param,
+                                    "allocation_test"
+                                    , i, mode="task_allocation",
+                                    model_name="collab_single_best")
+
+        if tmp_completion > best_completion:
+            best_completion = tmp_completion
+            best_params = i
+
+    print("The best completion was {0} at run {1}".format(best_completion, best_params))
 
 
 def run_reward_function(cfg, cfg_test, runs=20):
@@ -138,7 +140,7 @@ def run_collaboration(cfg, cfg_test, runs=20):
         tmp_completion = run_config(cfg, cfg_test
                                     , "reward_conf", param,
                                     "collab_multiple_best"
-                                    , i, multiple=True,
+                                    , i, mode="multiple",
                                     model_name="collab_single_best")
 
         if tmp_completion > best_completion:
@@ -164,8 +166,8 @@ def run_hyperparameter_test(cfg, cfg_test, interval, runs, parameter, parameter_
         for i in range(runs):
             completion_rate = run_config(cfg, cfg_test
                                          , "reward_conf", param,
-                                         "collab_multiple_"+parameter_name
-                                         , i, multiple=True,
+                                         "collab_multiple_" + parameter_name
+                                         , i, mode="multiple",
                                          model_name="collab_single_best")
 
             if completion_rate > best_completion:
@@ -212,7 +214,8 @@ def train_single(cfg, version, load_model=None):
 
 def train_multiple(cfg, version, trained_model):
     gym_wrapper = CustomEnv(cfg)
-    model_trained = DQN.load("{0}models/{1}".format(cfg["study_results"], trained_model), env=gym_wrapper)
+    model_trained = DQN.load("{0}models/{1}".format("./", trained_model), env=gym_wrapper)
+    # model_trained = DQN.load("{0}models/{1}".format(cfg["study_results"], trained_model), env=gym_wrapper)
 
     # change config
     change_config(cfg, None, "agents", 2)
@@ -292,16 +295,21 @@ def test_phase(config_name, version, trained_model=None, multi=False):
     return config_name["completion"]
 
 
-def run_config(cfg, cfg_test, key, value, name, version, multiple=False, model_name=""):
+def run_config(cfg, cfg_test, key, value, name, version, mode="single", model_name=""):
     change_config(cfg, cfg_test, key, value)
     cfg["experiment_name"] = name
     cfg_test["experiment_name"] = name
 
-    if multiple:
+    if mode == "multiple":
         change_config(cfg, cfg_test, "agents", 2)
         change_config(cfg, cfg_test, "p_weight", 2)
         train_multiple(cfg, version, model_name)
-        return test_phase(cfg_test, version, trained_model=model_name, multi=multiple)
+        return test_phase(cfg_test, version, trained_model=model_name, multi=True)
+    elif mode == "task_allocation":
+        change_config(cfg, cfg_test, "agents", 2)
+        change_config(cfg, cfg_test, "p_weight", 1)
+        train_multiple(cfg, version, model_name)
+        return test_phase(cfg_test, version, trained_model=model_name, multi=True)
     else:
         train_single(cfg, version)
         return test_phase(cfg_test, version)
@@ -331,8 +339,8 @@ if __name__ == '__main__':
     # run_sensor(config.wide_room_single, config.wide_room_single_test, runs=1)
 
     # run_dynamic_hindrances(config.small_room_single, config.small_room_single_test, runs=1)
-    # run_task_allocation(config.normal_room_single, config.normal_room_single_test, runs=5)
-    run_collaboration(config.small_room_single, config.small_room_single_test, runs=5)
+    run_task_allocation(config.small_room_single, config.small_room_single_test, runs=5)
+    run_collaboration(config.small_room_single, config.small_room_single_test, runs=1)
 
     end = timer()
     print("Elapsed time: {}".format(timedelta(seconds=end - start)))
