@@ -51,7 +51,7 @@ small_room_single = {
     "reward_conf": [1, 10, 10, 2000, 0, 0],
     "sensor_information": True,
     "distance_information": False,
-    "timesteps": 100000,
+    "timesteps": 2000000,
     "ep_length": 50,
     "prioritized": True,
     "dueling": True,

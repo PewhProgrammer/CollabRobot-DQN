@@ -117,8 +117,8 @@ class Grid(object):
 
         return sensor_list
 
-    def get_distance_to_pickup(self, pos):
-        lol, dist = self.bfs((pos[1], pos[0]), 'P0')
+    def get_distance_to_target(self, pos, char_target):
+        lol, dist = self.bfs((pos[1], pos[0]), char_target)
         return dist
 
     def check_pickup_delivery(self, agentID, obj_manager):

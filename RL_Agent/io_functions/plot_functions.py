@@ -174,8 +174,59 @@ def convert_completionRate_to_file(PATH, data_id="completion"):
     print(records)
 
 
+def extract_average_steps(PATH):
+    records = []
+    y_axis = []
+    min_steps_list = []
+    steps_p_list = []
+    episodes = 0
+
+    min_s_overall = 0
+    steps_overall = 0
+    deficit = 0
+
+    min_steps = "min_steps_required"
+    steps_p = "steps_performed"
+    with open(PATH) as f:
+        for line in f:
+            data = json.loads(line)
+            if min_steps in data:
+                min_s = data[min_steps]
+                step = data[steps_p]
+                if data['completed']:
+                    min_s_overall += min_s
+                    steps_overall += step
+                    deficit += step / min_s
+
+                y_axis.append(episodes)
+                min_steps_list.append(min_s)
+                steps_p_list.append(step)
+                episodes += 1
+
+    print("optimal steps overall: {0}  steps overall: {1}".format(min_s_overall, steps_overall))
+    print("Average deficit percentage in completed episodes {}".format(deficit / 150))
+    print("Average optimal steps {0} Average performed steps {2} Average surpass steps {1}".format(min_s_overall / 150, (steps_overall / 150) - (min_s_overall / 150),
+                                                                                                   steps_overall / 150))
+    plt.plot(y_axis,min_steps_list, label='optimal steps')
+    plt.plot(y_axis, steps_p_list, label="performed steps")
+
+    plt.legend()
+
+    sns.set(style="whitegrid", color_codes=True)
+
+    plt.ylabel('Time Steps')
+    plt.xlabel('Episodes')
+
+    figure = plt.gcf()  # get current figure
+    figure.set_size_inches(10, 6)
+
+    plt.savefig(PATH + "-steps.png", dpi=400, format='png')
+
+    plt.show()
+
 if __name__ == "__main__":
     # reward_functions_plot_swarm("../data/session_02.06/time-2230.log")
     # average_plot("E:/concept-1/final/")
     # bar_chart("")
-    convert_completionRate_to_file("E:/concept-1/final/")
+    # convert_completionRate_to_file("E:/concept-1/final/")
+    extract_average_steps("../study/algorithm_test/concept-3/small_room/game_logs/session_28.07/allocation_test-v3.log")

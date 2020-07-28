@@ -45,9 +45,9 @@ def save_state(env, state_id):
     body.append(util.export_state(env, state_id))
 
 
-def save_end(env, acc_rewards, completed=False):
+def save_end(env, acc_rewards, completed=False, min_steps = -1, steps_performed = -1):
     global start, body
-    payload = util.export_end_state(env, acc_rewards, completed)
+    payload = util.export_end_state(env, acc_rewards, completed, min_steps, steps_performed)
     # print("Accumulated rewards: {}".format(acc_rewards))
 
     # merge every struct into result

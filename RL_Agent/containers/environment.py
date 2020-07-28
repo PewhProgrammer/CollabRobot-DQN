@@ -2,6 +2,7 @@
 """
 
 import math
+import sys
 import numpy as np
 from containers.objective_manager import Objective_Manager
 
@@ -37,6 +38,9 @@ class Environment(object):
         self.reward_manager = None
         self.robots = {}  # agent always in #1
 
+        self.min_steps_to_completion = sys.maxsize
+        self.agents_moved_count = -1
+
         self.last_action = None
         self.episode = -1
 
@@ -44,7 +48,7 @@ class Environment(object):
         self.grid.update(self.robots, self.objective_manager)
 
     def move_objectives(self, rID):  # if necessary
-        self.objective_manager.perform_action(self.robots[0], self.grid)
+        self.objective_manager.perform_action(self.robots[rID], self.grid)
 
     def move_robots(self, action, rID):
         agent = self.robots[rID]
@@ -57,21 +61,25 @@ class Environment(object):
 
         # move the agent with the action
         actionID = int(action)
+        self.last_action = actionID
         if actionID == Movement.GRASP.value:  # robot is grasping; check for objectives in close proximity
             self.objective_manager.check_grasping_objective(self.robots[rID])
-        self.last_action = actionID
-        pos = agent.move(actionID)
-        if self.grid.check_collision_into_solids(pos, self.objective_manager.is_grasping_objective(self.robots[rID])):
-            agent.reset_position()
+        else:
+            # agent is moving
+            pos = agent.move(actionID)
+            if self.grid.check_collision_into_solids(pos, self.objective_manager.is_grasping_objective(self.robots[rID])):
+                agent.reset_position()
+            else:
+                self.agents_moved_count += 1
 
     def robot_position(self, rID) -> np.array:
         r = self.robots[rID].get_position()
         return np.array([r[0], r[1]])
 
-    def all_agents_position(self):
-        agents = self.robot_position(0)
+    def all_agents_position(self, first=0):
+        agents = self.robot_position(first)
         for i, robot in self.robots.items():
-            if self.robots[i].isDummy() or i == 0:
+            if self.robots[i].isDummy() or i == first:
                 continue
             agents = np.concatenate((agents, self.robot_position(i)))
 
@@ -127,11 +135,17 @@ class Environment(object):
         self.update_grid()
 
         # add distance to pickup for each agent
+        min_dist_p = sys.maxsize
+        self.agents_moved_count = 0
         if self.config["distance_information"]:
             for i, agent in self.robots.items():
-                agent.dist_to_pickup = self.grid.get_distance_to_pickup(
-                    self.robot_position(i)
-                )
+                agent.dist_to_pickup = self.grid.get_distance_to_target(
+                    self.robot_position(i), 'P0')
+                min_dist_p = min(min_dist_p, agent.dist_to_pickup)  # store the minimum step to P
+
+        # substract -1, since agent only needs to be next to pickup
+        self.min_steps_to_completion = min_dist_p -1 + self.grid.get_distance_to_target(
+            self.objective_manager.pickup_get_positions(), 'D0')
 
         # reset means new start of episode
         self.episode = trial

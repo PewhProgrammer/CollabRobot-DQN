@@ -23,7 +23,9 @@ def load_map(filepath, width, height, w = 1):
                     obj_storage["dropoff"] = (i, j)
 
                 if 'P' in c:
-                    weight = f.read(1)
+                    # discard read weight
+                    f.read(1)
+                    weight = w # f.read(1)
                     c += str(pickups)
                     obj_storage[pickups] = (i, j, int(weight))
                     pickups += 1

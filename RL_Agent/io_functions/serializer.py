@@ -26,7 +26,7 @@ def export_state(env, state_id="NONE"):
     return json.dumps(x, default=lambda o: o.__dict__, separators=(',', ':'))
 
 
-def export_end_state(env, r, completed):
+def export_end_state(env, r, completed, min_steps, steps_p):
     """
     :param completed:
     :param env:
@@ -37,7 +37,9 @@ def export_end_state(env, r, completed):
     x = {
         "acc_rewards": r,
         "completed": completed,
-        "picked_up": env.reached_pickups()
+        "picked_up": env.reached_pickups(),
+        "min_steps_required": min_steps,
+        "steps_performed": steps_p
     }
 
     return x

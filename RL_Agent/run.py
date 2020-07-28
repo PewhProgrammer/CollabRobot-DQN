@@ -13,6 +13,7 @@ from stable_baselines import DQN
 import io_functions.game_logger as logger
 from timeit import default_timer as timer
 from datetime import timedelta
+from io_functions.serializer import export_dict_to_string
 
 import os
 
@@ -51,7 +52,7 @@ def run_task_allocation(cfg, cfg_test, runs=20):
                                     , "reward_conf", param,
                                     "allocation_test"
                                     , i, mode="task_allocation",
-                                    model_name="collab_single_best")
+                                    model_name="allocation_test-v3")
 
         if tmp_completion > best_completion:
             best_completion = tmp_completion
@@ -224,9 +225,6 @@ def train_multiple(cfg, version, trained_model, double_agent=False):
         # model_trained = DQN.load("{0}models/{1}".format("./", trained_model), env=gym_wrapper)
         model_trained = DQN.load("{0}models/{1}".format(cfg["study_results"], trained_model), env=gym_wrapper)
 
-    # change config
-    change_config(cfg, None, "agents", 2)
-
     gym_wrapper = MultiAgentCustomEnv(cfg, model_trained, single=not double_agent)
 
     model = DQN(MlpPolicy, gym_wrapper, verbose=1,
@@ -261,6 +259,9 @@ def test_phase(config_name, version, trained_model=None, multi=False, double_age
     acc_rewards = 0
     completed = 0
     collided = 0
+    min_steps_needed = 0
+    steps_performed = 0
+
 
     logger.create_new_handler(config_name["study_results"], config_name["experiment_name"], version)
     logger.save_init(gym_wrapper.get_env())
@@ -281,12 +282,16 @@ def test_phase(config_name, version, trained_model=None, multi=False, double_age
             print("[E-{}] Accumulated rewards: {}".format(episode, acc_rewards))
             finished = env.objective_manager.is_done()
 
-            logger.save_end(env, acc_rewards, finished)
-            ep_stats[episode] = (acc_rewards, finished)
+            logger.save_end(env, acc_rewards, finished, env.min_steps_to_completion, max(env.agents_moved_count,env.min_steps_to_completion))
+            ep_stats[episode] = (acc_rewards, finished, env.min_steps_to_completion, env.agents_moved_count)
             if finished:
                 completed += 1
                 if env.get_agent().is_collided():
                     collided += 1
+
+            min_steps_needed += env.min_steps_to_completion
+            steps_performed += env.agents_moved_count
+
             gym_wrapper.reset()
             logger.save_init(env)
 
@@ -300,9 +305,15 @@ def test_phase(config_name, version, trained_model=None, multi=False, double_age
     print("Collision rate: {}".format(collided / episode))
     config_name["completion"] = completed / episode
     config_name["collided"] = collided / episode
+    if config_name["distance_information"]:
+        print("Minimum steps: {0}  Performed steps: {1}".format(min_steps_needed , steps_performed))
+        config_name["steps_surplus_rate"] = steps_performed / min_steps_needed
     logger.log_json(config_name)
-    # f = open("study/algorithm_test/eval-150-cross.log", "w") f.write(serializer.export_dict_to_string("E{}".format(
-    # ep_stats))) # use this to store all reward and completion episodes f.close()
+
+    # use this to store all reward and completion episodes
+    # f = open("study/algorithm_test/eval-150-performed-steps.log", "w")
+    # f.write(export_dict_to_string("E{}".format(ep_stats)))
+    # f.close()
 
     return config_name["completion"]
 
@@ -325,8 +336,8 @@ def run_config(cfg, cfg_test, key, value, name, version, mode="single", model_na
         change_config(cfg, cfg_test, "distance_information", True)
         change_config(cfg, cfg_test, "study_results", "./study/algorithm_test/concept-3/small_room/")
 
-        train_multiple(cfg, version, model_name)
-        return test_phase(cfg_test, version, trained_model=model_name, multi=True)
+        # train_multiple(cfg, version, model_name)
+        return test_phase(cfg_test, version=3, trained_model=model_name, multi=True, double_agent=True)
     else:
         train_single(cfg, version)
         return test_phase(cfg_test, version)

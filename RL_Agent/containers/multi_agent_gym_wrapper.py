@@ -121,21 +121,30 @@ class MultiAgentCustomEnv(gym.Env):
         return reward, done
 
     def update_allocation(self, action, action2, carried, agent1_grasping, agent2_grasping):
-        nullify_reward = 1
+        nullify_reward = 0
 
         self.env.move_robots(action, 0)
         self.env.move_robots(action2, 1)
-        self.env.move_objectives(0)
+        if agent1_grasping:
+            self.env.move_objectives(0)
+        if agent2_grasping:
+            self.env.move_objectives(1)
         self.env.update_grid()
         reward, done = self.env.reward_manager.observe(self.env, self.env.robots[0],
                                                        action)
 
-        if self.env.robots[0].dist_to_pickup > self.env.robots[1].dist_to_pickup:
-            nullify_reward = 0
-        # nullify the reward if action differs during carrying in multiple setup
-        reward *= nullify_reward
+        reward2, done2 = self.env.reward_manager.observe(self.env, self.env.robots[1],
+                                                         action2)
 
-        return reward, done
+        done = done or done2
+
+        # nullify the reward if the agent was too far away from the pickup
+        if self.env.robots[0].dist_to_pickup > self.env.robots[1].dist_to_pickup:
+            reward *= nullify_reward
+        if self.env.robots[1].dist_to_pickup > self.env.robots[0].dist_to_pickup:
+            reward2 *= nullify_reward
+
+        return reward + reward2, done
 
     def reset(self):
         self.current_step = 0
@@ -149,10 +158,10 @@ class MultiAgentCustomEnv(gym.Env):
 
     # scheme: agent pos, pickup pos, dropoff pos, carrying
     def input_data(self, robotID):
-        data = self.env.all_agents_position(), \
+        data = self.env.all_agents_position(first=robotID), \
                self.env.objective_manager.pickup_get_positions_np(), \
                self.env.objective_manager.dropoff_get_positions_np(), \
-               self.get_all_pickups()
+               self.get_all_pickups(first=robotID)
 
         if self.config["sensor_information"]:
             tmp = list(data) + self.env.grid.get_sensoric_distance(self.env.robot_position(robotID))
@@ -182,10 +191,11 @@ class MultiAgentCustomEnv(gym.Env):
         shape = np.concatenate(data, axis=None)
         return shape.reshape(1, self.N_DISCRETE_OBSERVATION_SINGLE)
 
-    def get_all_pickups(self):
-        pickup_array = []  # empty regular list
+    def get_all_pickups(self, first=0):
+        pickup_array = [self.env.objective_manager.has_pickup(first)]  # empty regular list
         for i in range(self.config["agents"]):
-            pickup_array.append(self.env.objective_manager.has_pickup(i))
+            if i != first:
+                pickup_array.append(self.env.objective_manager.has_pickup(i))
 
         return np.array(pickup_array)
 
