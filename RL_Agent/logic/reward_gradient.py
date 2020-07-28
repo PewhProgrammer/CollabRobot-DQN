@@ -18,6 +18,7 @@ class RewardGradient(object):
 
     # The class "constructor" - It's actually an initializer
     def __init__(self, grid, cfg):
+        self.mode = cfg["id"]
         self.grid = grid
         self.p_reward = cfg["reward_conf"][0]
         self.p_reward_final = cfg["reward_conf"][1]
@@ -28,6 +29,21 @@ class RewardGradient(object):
 
     # calculate the points after a move has been made
     def observe(self, env, agent, actionID):
+
+        if self.mode == 6:
+            # this is obstacle lane use case
+            return self.update_obstacle_lane(env, agent, actionID)
+        return self.update_basic(env, agent, actionID)
+
+    def update_obstacle_lane(self,env, agent, actionID):
+        punishment = self.punish(agent, actionID)
+
+        # check if the agent has reached the dropoff area
+        reward, done = self.reward_on_dropoff(agent, env, actionID)
+
+        return reward + punishment, done  # done if pickup is on dropoff
+
+    def update_basic(self, env, agent, actionID):
         # we are using separated reward function
         reward, carrying = self.reward_on_grasping(agent, env, actionID)
 
@@ -75,8 +91,13 @@ class RewardGradient(object):
 
     def reward_on_dropoff(self, agent, env, action_id):
         obj_manager = env.objective_manager
-        if self.grid.check_pickup_delivery(agent.id, obj_manager):
-            return self.d_reward_final, True
+
+        if self.mode == 6:
+            if self.grid.check_agent_on_dropoff(agent):
+                return self.d_reward_final, True
+        else:
+            if self.grid.check_pickup_delivery(agent.id, obj_manager):
+                return self.d_reward_final, True
 
         if action_id == Movement.GRASP.value:  # or agent.is_stuck(action_id):
             return 0, False

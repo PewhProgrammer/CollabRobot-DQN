@@ -11,12 +11,13 @@ import numpy as np
 class Grid(object):
 
     # The class "constructor" - It's actually an initializer
-    def __init__(self, grid=[], width=0, height=0):
+    def __init__(self, grid=[], width=0, height=0, obstacle_lane=False):
         self._stored_positions = []
         self._width = width
         self._height = height
         self.data = grid
         self._wall = '#'
+        self._obstacle_lane = obstacle_lane
 
     def update(self, robots: [Robot], obj_manager):
         self.reset_grid()
@@ -35,8 +36,9 @@ class Grid(object):
             y, x = p_pos[0], p_pos[1]
             y1, x1 = d_pos[0], d_pos[1]
 
-            self._stored_positions.append((y, x))
-            self.data[y][x].append("P" + str(key))
+            if y > -1 and x > -1:
+                self._stored_positions.append((y, x))
+                self.data[y][x].append("P" + str(key))
 
             self._stored_positions.append((y1, x1))
             self.data[y1][x1].append("D" + str(key))
@@ -134,6 +136,19 @@ class Grid(object):
         objective = obj_manager.get_objectives()[objective_id]
         return objective.is_delivered()
 
+    def check_agent_on_dropoff(self, agent):
+        """
+        checks if agent is on the dropoff zone
+        :return: Boolean value indicating if agent successfully dropped of itself
+        """
+
+        y, x = agent.get_position()
+        for i in self.data[y][x]:
+            if not is_number(i) and i.startswith('D'):
+                return True
+
+        return False
+
     def check_collision(self, pos):
         self.check_boundary(pos)
 
@@ -195,12 +210,30 @@ class Grid(object):
     def check_occupancy_free(self, x, y):
         return len(self.data[y][x]) == 0
 
-    def calculate_random_pos(self):
-        while True:
-            x = math.floor((self._width - 1) * random.uniform(0.0, 1.0))
-            y = math.floor((self._height - 1) * random.uniform(0.0, 1.0))
-            if self.check_occupancy_free(x, y):
-                break
+    def calculate_random_pos(self, agent=True, dummy_y=1):
+        if self._obstacle_lane:
+            # calculate exact spawn point for the agent or dummy
+            if agent:
+                # only spawn in this rectangle x:(1,2) and y:(1,3)
+                while True:
+                    x = random.randint(1, 2)
+                    y = random.randint(1, 3)
+                    if self.check_occupancy_free(x, y):
+                        break
+            else:
+                # only spawn apart of the agents spawn and in each lane
+                # each dummy spawns in the lane of his id
+                while True:
+                    x = random.randint(3, self._width - 1)
+                    y = dummy_y
+                    if self.check_occupancy_free(x, y):
+                        break
+        else:
+            while True:
+                x = math.floor((self._width - 1) * random.uniform(0.0, 1.0))
+                y = math.floor((self._height - 1) * random.uniform(0.0, 1.0))
+                if self.check_occupancy_free(x, y):
+                    break
 
         return x, y
 

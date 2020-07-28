@@ -11,5 +11,5 @@ def make_agent(id, grid, width=100, height=100, diameter=20, speed=1):
 
 
 def make_dummy(id, grid, width=100, height=100, diameter=20, speed=1):
-    x, y = grid.calculate_random_pos()
+    x, y = grid.calculate_random_pos(agent=False, dummy_y=id)
     return RobotDummy(id, x, y, width, height, diameter, speed)

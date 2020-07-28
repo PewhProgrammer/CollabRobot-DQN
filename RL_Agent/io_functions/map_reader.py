@@ -3,7 +3,7 @@ from containers.grid import Grid
 import numpy as np
 
 
-def load_map(filepath, width, height, w = 1):
+def load_map(filepath, width, height, w=1, mode=1):
     grid_array = [[[] for x in range(width)] for y in range(height)]
 
     objectives = {}
@@ -25,7 +25,7 @@ def load_map(filepath, width, height, w = 1):
                 if 'P' in c:
                     # discard read weight
                     f.read(1)
-                    weight = w # f.read(1)
+                    weight = w  # f.read(1)
                     c += str(pickups)
                     obj_storage[pickups] = (i, j, int(weight))
                     pickups += 1
@@ -43,26 +43,44 @@ def load_map(filepath, width, height, w = 1):
 
         # print("End of file")
 
-    grid_obj = Grid(grid_array, width, height)
+    grid_obj = Grid(grid_array, width, height, obstacle_lane=mode == 6)
 
-    if len(objectives) == 0:
-        # lack of objective; generate randoms
-        weight = w  # need 2 agents to carry
-        x, y = grid_obj.calculate_random_pos()  # pickup
-        x1, y1 = x, y
-        while x == x1 and y == y1:
-            x1, y1 = grid_obj.calculate_random_pos()  # dropoff
-        objectives[0] = Objectives((y, x), (y1, x1), weight)
+    if mode == 6:
+        # obstacle lane
+        objectives = spawn_target_at_end(width, height)
+    else:
+        if len(objectives) == 0:
+            objectives[0] = spawn_objectives_randomly(grid_obj, w)
 
     return grid_obj, objectives
 
 
-def create_test_maps(map_path,w,h):
+def spawn_target_at_end(width, height):
+    # lack of objective; generate randoms
+    results = {}
+    weight = 1
+    # generate target at the end of the map
+    for i in range(height - 2):
+        results[i] = Objectives((-1, -1), (i + 1, width - 2), weight)
+    return results
+
+
+def spawn_objectives_randomly(grid_obj, w):
+    # lack of objective; generate randoms
+    weight = w  # need 2 agents to carry
+    x, y = grid_obj.calculate_random_pos()  # pickup
+    x1, y1 = x, y
+    while x == x1 and y == y1:
+        x1, y1 = grid_obj.calculate_random_pos()  # dropoff
+    return Objectives((y, x), (y1, x1), weight)
+
+
+def create_test_maps(map_path, w, h):
     # generate some maps for me
 
     for i in range(150):
         f = open("{}v{}.map".format(map_path, i), "w")
-        grid, obj = load_map("{}empty.map".format(map_path), w,h)
+        grid, obj = load_map("{}empty.map".format(map_path), w, h, w=1, mode=6)
         row, column = len(grid.data), len(grid.data[0])
 
         p_pos, d_pos = obj[0].get_pickup_pos(), obj[0].get_dropoff_pos()
@@ -70,14 +88,19 @@ def create_test_maps(map_path,w,h):
         for y in range(row):
             rowContent = ""
             for x in range(column):
-                if y == p_pos[0] and x == p_pos[1]:
-                    rowContent += "P1"
-                    x += 1
-                elif y == d_pos[0] and x == d_pos[1]:
-                    rowContent += "D"
-                elif len(grid.data[y][x]) == 0:
+                no_objectives_placed = True
+                for i, value in obj.items():
+                    d_y, d_x = value.get_dropoff_pos()
+                    if y == p_pos[0] and x == p_pos[1]:
+                        rowContent += "P1"
+                        x += 1
+                        no_objectives_placed = False
+                    elif y == d_y and x == d_x:
+                        rowContent += "D"
+                        no_objectives_placed = False
+                if len(grid.data[y][x]) == 0 and no_objectives_placed:
                     rowContent += "."
-                else:
+                elif no_objectives_placed:
                     rowContent += grid.data[y][x][0]
 
             f.write(rowContent + "\n")
@@ -92,5 +115,5 @@ def test_sensoric_distance_calculation(map_path):
 
 
 if __name__ == "__main__":
-    create_test_maps("../maps/wide_room/", 16, 16)
+    create_test_maps("../maps/obstacle_lane/", 16, 5)
     # test_sensoric_distance_calculation("../maps/small_room/")

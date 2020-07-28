@@ -191,11 +191,9 @@ def run_dynamic_hindrances(cfg, cfg_test, runs=20):
 
     change_config(cfg, cfg_test, "sensor_information", True)
 
-    for j in range(10):
-        pun = round((j + 1), 1)
-        for i in range(runs):
-            run_config(cfg, cfg_test
-                       , "reward_conf", [1, 10, 10, 2000, pun, 0], "experiment_punish_-" + str(pun), i)
+    for i in range(runs):
+        run_config(cfg, cfg_test
+                   , "reward_conf", [1, 35, 1, 200, -15, 0], "experiment_", i)
 
 
 def train_single(cfg, version, load_model=None):
@@ -367,7 +365,8 @@ if __name__ == '__main__':
     # run_sensor(config.wide_room_single, config.wide_room_single_test, runs=1)
 
     # run_dynamic_hindrances(config.small_room_single, config.small_room_single_test, runs=1)
-    run_task_allocation(config.small_room_single, config.small_room_single_test, runs=1)
+    run_dynamic_hindrances(config.obstacle_lane, config.obstacle_lane_test, runs=1)
+    # run_task_allocation(config.small_room_single, config.small_room_single_test, runs=1)
     # run_collaboration(config.small_room_single, config.small_room_single_test, runs=2)
 
     end = timer()

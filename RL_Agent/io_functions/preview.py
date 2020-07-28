@@ -46,4 +46,4 @@ def create_preview(mappath, width, height, zoom=1):
     im.save(new_img_path)
 
 
-create_preview('../maps/small_warehouse/empty_test.map', 13, 8, 50)
+create_preview('../maps/obstacle_lane/empty.map', 16, 5, 50)
