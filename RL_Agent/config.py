@@ -26,19 +26,34 @@ talos_params = {'activation': ['relu', 'elu'],
 
 # MAP
 
-sample_easy = {
-    "id": 2,
-    "width": 31,
-    "height": 11,
-    "map": "maps/sample_easy.map",
+obstacle_lane = {
+    "id": 6,
+    "width": 16,
+    "height": 5,
+    "map": ["maps/obstacle_lane/empty.map", 1],
     "agents": 1,
-    "dummies": 0,
-    "connected_objectives": [(1, 2)],
-    "observation_space": 7
+    "dummies": 3,
+    "p_weight": 1,
+    "observation_space": 8,
+    "reward": "gradient",
+    # "reward_conf": [0.05, 500, 1, 500, -15, 0],
+    "reward_conf": [1, 10, 10, 2000, 0, 0],
+    "sensor_information": True,
+    "distance_information": False,
+    "timesteps": 10000,
+    "ep_length": 50,
+    "prioritized": True,
+    "dueling": True,
+    "double-dqn": True,
+    "exploration_frac": 0.1,
+    "study_results": "./study/algorithm_test/concept-2/obstacle_lane/",
+    "experiment_name": "experiment"
 }
 
+obstacle_lane_test = {**obstacle_lane, 'map': ["maps/small_room/", 150]}
+
 small_room_single = {
-    "id": 3,
+    "id": 1,
     "width": 10,
     "height": 6,
     "map": ["maps/small_room/empty.map", 1],
@@ -64,7 +79,7 @@ small_room_single = {
 small_room_single_test = {**small_room_single, 'map': ["maps/small_room/", 150]}
 
 normal_room_single = {
-    "id": 4,
+    "id": 2,
     "width": 13,
     "height": 8,
     "map": ["maps/normal_room/empty.map", 1],

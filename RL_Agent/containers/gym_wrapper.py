@@ -23,10 +23,10 @@ class CustomEnv(gym.Env):
         # They must be gym.spaces objects
 
         self.N_DISCRETE_ACTIONS = 5
+        self.N_DISCRETE_OBSERVATION = config["observation_space"]
         if config["sensor_information"]:
-            self.N_DISCRETE_OBSERVATION = config["observation_space"] + 8
-        else:
-            self.N_DISCRETE_OBSERVATION = config["observation_space"]
+            self.N_DISCRETE_OBSERVATION += 8
+
         # shape = shape.reshape(1, self.N_DISCRETE_OBSERVATION)
 
         # Example when using discrete actions:
@@ -79,6 +79,7 @@ class CustomEnv(gym.Env):
 
         return self.state, reward, done, info
 
+
     def reset(self):
         self.current_step = 0
         self.num_resets += 1
@@ -99,6 +100,9 @@ class CustomEnv(gym.Env):
 
     def input_data(self, robotID):
 
+        if self.config["id"] == 6:
+            return self.obstacle_lane_observation(robotID)
+
         data = self.env.all_agents_position(), \
                self.env.objective_manager.pickup_get_positions_np(), \
                self.env.objective_manager.dropoff_get_positions_np(), \
@@ -111,9 +115,19 @@ class CustomEnv(gym.Env):
         shape = np.concatenate(data, axis=None)
         return shape.reshape(1, self.N_DISCRETE_OBSERVATION)
 
+    def obstacle_lane_observation(self, robotID):
+        data = self.env.all_agents_position(), \
+               self.env.objective_manager.dropoff_get_positions_np(), \
+
+        if self.config["sensor_information"]:
+            tmp = list(data) + self.env.grid.get_sensoric_distance(self.env.robot_position(robotID))
+            data = tuple(tmp)
+
+        shape = np.concatenate(data, axis=None)
+        return shape.reshape(1, self.N_DISCRETE_OBSERVATION)
+
     def _observation_state(self):
         data = self.env.objective_manager.pickup_get_positions()
-
         return data
 
     def get_env(self):

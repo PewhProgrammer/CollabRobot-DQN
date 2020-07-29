@@ -55,7 +55,10 @@ class Environment(object):
         if self.config["dummies"] > 0:
             for i, dummy in self.robots.items():
                 if str(i).startswith('H'):
-                    pos = dummy.move()
+                    if self.config["id"] == 6:
+                        pos = dummy.move(Movement.WEST)
+                    else:
+                        pos = dummy.move()
                     if self.grid.check_collision_into_solids(pos):
                         dummy.reset_position()
 
@@ -114,7 +117,7 @@ class Environment(object):
             path = "{}v{}.map".format(self.config["map"][0], map_version)
         else:
             path = self.config["map"][0]
-        self.grid, objective_list = load_map(path, self.width, self.height, self.config["p_weight"])
+        self.grid, objective_list = load_map(path, self.width, self.height, self.config["p_weight"], self.config["id"])
         self.objective_manager = Objective_Manager(objective_list)
         if "reward" in self.config and self.config["reward"] == "gradient":
             self.reward_manager = RewardGradient(self.grid, self.config)
@@ -143,9 +146,9 @@ class Environment(object):
                     self.robot_position(i), 'P0')
                 min_dist_p = min(min_dist_p, agent.dist_to_pickup)  # store the minimum step to P
 
-        # substract -1, since agent only needs to be next to pickup
-        self.min_steps_to_completion = min_dist_p -1 + self.grid.get_distance_to_target(
-            self.objective_manager.pickup_get_positions(), 'D0')
+            # substract -1, since agent only needs to be next to pickup
+            self.min_steps_to_completion = min_dist_p -1 + self.grid.get_distance_to_target(
+                self.objective_manager.pickup_get_positions(), 'D0')
 
         # reset means new start of episode
         self.episode = trial
