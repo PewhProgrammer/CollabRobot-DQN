@@ -121,7 +121,7 @@ class MultiAgentCustomEnv(gym.Env):
         return reward, done
 
     def update_allocation(self, action, action2, carried, agent1_grasping, agent2_grasping):
-        nullify_reward = 0
+        negate_reward = -1
 
         self.env.move_robots(action, 0)
         self.env.move_robots(action2, 1)
@@ -140,9 +140,17 @@ class MultiAgentCustomEnv(gym.Env):
 
         # nullify the reward if the agent was too far away from the pickup
         if self.env.robots[0].dist_to_pickup > self.env.robots[1].dist_to_pickup:
-            reward *= nullify_reward
+            # punish agent1 when he is trying to move
+            y, x = self.env.robots[0].get_latest_move_diff()
+            if (x != 0 or y != 0) and reward > 0:
+                reward *= negate_reward
+            reward = min(0, reward)
         if self.env.robots[1].dist_to_pickup > self.env.robots[0].dist_to_pickup:
-            reward2 *= nullify_reward
+            # punish agent2 when he is trying to move
+            y, x = self.env.robots[1].get_latest_move_diff()
+            if (x != 0 or y != 0) and reward2 > 0:
+                reward2 *= negate_reward
+            reward2 = min(0, reward2)
 
         return reward + reward2, done
 

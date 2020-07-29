@@ -46,8 +46,10 @@ def run_task_allocation(cfg, cfg_test, runs=20):
     best_completion = 0
     best_params = []
 
-    param = [2, 14, 14, 2000, -100, 0]
+    punishment = 0
     for i in range(runs):
+        punishment -= 75
+        param = [2, 14, 14, 2000, punishment, 0]
         tmp_completion = run_config(cfg, cfg_test
                                     , "reward_conf", param,
                                     "allocation_test"
@@ -336,7 +338,7 @@ def run_config(cfg, cfg_test, key, value, name, version, mode="single", model_na
         change_config(cfg, cfg_test, "distance_information", True)
         change_config(cfg, cfg_test, "study_results", "./study/algorithm_test/concept-3/small_room/")
 
-        train_multiple(cfg, version, model_name)
+        train_multiple(cfg, version, model_name, double_agent=True)
         return test_phase(cfg_test, version=version, trained_model=model_name, multi=True, double_agent=True)
     else:
         train_single(cfg, version)
