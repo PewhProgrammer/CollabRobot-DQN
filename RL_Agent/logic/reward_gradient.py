@@ -36,7 +36,7 @@ class RewardGradient(object):
         return self.update_basic(env, agent, actionID)
 
     def update_obstacle_lane(self,env, agent, actionID):
-        punishment = self.punish(agent, actionID)
+        punishment = self.punish(agent, env.robots)
 
         # check if the agent has reached the dropoff area
         reward, done = self.reward_on_dropoff(agent, env, actionID)
@@ -47,7 +47,7 @@ class RewardGradient(object):
         # we are using separated reward function
         reward, carrying = self.reward_on_grasping(agent, env, actionID)
 
-        punishment = self.punish(agent, actionID)
+        punishment = self.punish(agent, env.robots)
 
         if not carrying:
             return punishment + reward, False  # not done yet
@@ -94,6 +94,7 @@ class RewardGradient(object):
 
         if self.mode == 6:
             if self.grid.check_agent_on_dropoff(agent):
+                env.objective_manager.set_reached_target()
                 return self.d_reward_final, True
         else:
             if self.grid.check_pickup_delivery(agent.id, obj_manager):
@@ -104,7 +105,7 @@ class RewardGradient(object):
 
         return self.reward_on_distance(agent, obj_manager, env.max_euc_dist, pickup=False), False
 
-    def punish(self, agent, action_id):
+    def punish(self, agent, robots):
         punishment = self.default_punishment  # default punishment
 
         # punish for being stuck
@@ -112,13 +113,13 @@ class RewardGradient(object):
         #     punishment += self.collision_punishment
 
         # check collision
-        punishment += self.punish_collision(agent)
+        punishment += self.punish_collision(agent, robots)
 
         return punishment  # / (env_size[0] * env_size[1])
 
-    def punish_collision(self, agent):
+    def punish_collision(self, agent, robots):
         agent_pos = agent.get_position()
-        collision = self.grid.check_collision(agent_pos)
+        collision = self.grid.check_collision(agent_pos) or self.grid.check_crossover_collision(robots)
 
         if collision:
             agent.set_collided(True)

@@ -20,9 +20,11 @@ function agent_job(command) {
 
 function objective_job(positions) {
   // we only draw pickups
-
-  pickups[0].display([positions]);
-  dropoffs[0].display({});
+  const _amount_objectives$ = pickups.length;
+  for(let i = 0; i < _amount_objectives$; i++){
+    pickups[i].display([positions]);
+    dropoffs[i].display({});
+  }
 }
 
 function obstacle_job(board, scaledX, scaledY) {
@@ -119,10 +121,10 @@ class Target {
     stroke(0);
     if (this.letter == "P") 
     {
-      textSize(40);
+      textSize(0.57*this.size);
       text(this.letter, posX + this.offsetX + 5, posY + this.offsetY);
     } else {
-      textSize(15);
+      textSize(0.25*this.size);
       text(this.letter, posX + this.offsetX - 6, posY + this.offsetY - 7);
     }
     noStroke();
@@ -159,13 +161,13 @@ class Robot {
     if (this.agent) fill("#cc3853");
     else fill(155, 155, 155);
     // check if border has been reached and reset
-    strokeWeight(4);
+    strokeWeight(2);
     stroke(51);
     ellipse(this.x, this.y, this.diameter + this.dia_scale, this.diameter + this.dia_scale);
 
     fill(0);
-    textSize(30);
-    text(this.letter, this.x - 7, this.y + 12);
+    textSize(0.70 * this.canvasSpeedX);
+    text(this.letter, this.x - this.canvasSpeedX * 0.18, this.y + 12);
     noStroke();
 
   }

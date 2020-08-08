@@ -48,7 +48,9 @@ class Environment(object):
         self.grid.update(self.robots, self.objective_manager)
 
     def move_objectives(self, rID):  # if necessary
+        # check if its still on grasp
         self.objective_manager.perform_action(self.robots[rID], self.grid)
+        grasping, msg = self.objective_manager.check_grasping_objective(self.robots[0], grasp_action=False)
 
     def move_robots(self, action, rID):
         agent = self.robots[rID]

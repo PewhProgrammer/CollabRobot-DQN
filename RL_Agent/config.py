@@ -40,7 +40,7 @@ obstacle_lane = {
     "reward_conf": [1, 10, 10, 2000, 0, 0],
     "sensor_information": True,
     "distance_information": False,
-    "timesteps": 10000,
+    "timesteps": 100000,
     "ep_length": 50,
     "prioritized": True,
     "dueling": True,
@@ -50,7 +50,7 @@ obstacle_lane = {
     "experiment_name": "experiment"
 }
 
-obstacle_lane_test = {**obstacle_lane, 'map': ["maps/small_room/", 150]}
+obstacle_lane_test = {**obstacle_lane, 'map': ["maps/obstacle_lane/", 150]}
 
 small_room_single = {
     "id": 1,
@@ -58,7 +58,7 @@ small_room_single = {
     "height": 6,
     "map": ["maps/small_room/empty.map", 1],
     "agents": 1,
-    "dummies": 0,
+    "dummies": 2,
     "p_weight": 1,
     "observation_space": 7,
     "reward": "gradient",
@@ -66,13 +66,13 @@ small_room_single = {
     "reward_conf": [1, 10, 10, 2000, 0, 0],
     "sensor_information": True,
     "distance_information": False,
-    "timesteps": 2000000,
+    "timesteps": 100000,
     "ep_length": 50,
     "prioritized": True,
     "dueling": True,
     "double-dqn": True,
     "exploration_frac": 0.1,
-    "study_results": "./study/algorithm_test/concept-3/small_room/",
+    "study_results": "./study/algorithm_test/concept-2/small_room/",
     "experiment_name": "experiment"
 }
 

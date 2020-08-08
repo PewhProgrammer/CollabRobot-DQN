@@ -18,6 +18,7 @@ class Grid(object):
         self.data = grid
         self._wall = '#'
         self._obstacle_lane = obstacle_lane
+        self._dummy_positions = []
 
     def update(self, robots: [Robot], obj_manager):
         self.reset_grid()
@@ -159,8 +160,25 @@ class Grid(object):
             if is_number(i) or i.startswith('H'):
                 agent_num += 1
 
-            if i == '#' or agent_num > 1 or (not is_number(i) and i.startswith('P')):  # or i.startswith('X')
+            if i == '#' or agent_num > 1 or \
+                    (not is_number(i) and (i.startswith('P') or i.startswith('H'))):  # or i.startswith('X')
                 return True
+
+        return False
+
+    def check_crossover_collision(self, robots):
+        agent = robots[0]
+        agent_old_y, agent_old_x = agent.oldPos
+
+        # we are only interested in computing the cross over collision for the agent
+        for i, robot in robots.items():
+            if i == 1: continue
+            # check if oldPosition of agent equals newPosition of any other robot
+            if robot.posX == agent_old_x and robot.posY == agent_old_y:
+                # check if the agent ended up in the opposing position
+                robot_old_y, robot_old_x = robot.oldPos
+                if agent.posX == robot_old_x and agent.posY == robot_old_y:
+                    return True
 
         return False
 
@@ -212,11 +230,12 @@ class Grid(object):
 
     def calculate_random_pos(self, agent=True, dummy_y=1):
         if self._obstacle_lane:
+
             # calculate exact spawn point for the agent or dummy
             if agent:
                 # only spawn in this rectangle x:(1,2) and y:(1,3)
                 while True:
-                    x = random.randint(1, 2)
+                    x = 1
                     y = random.randint(1, 3)
                     if self.check_occupancy_free(x, y):
                         break
@@ -226,7 +245,8 @@ class Grid(object):
                 while True:
                     x = random.randint(3, self._width - 1)
                     y = dummy_y
-                    if self.check_occupancy_free(x, y):
+                    if self.check_occupancy_free(x, y) and self.check_boundary_box(x):
+                        self._dummy_positions.append(x)
                         break
         else:
             while True:
@@ -236,6 +256,14 @@ class Grid(object):
                     break
 
         return x, y
+
+    def check_boundary_box(self, x):
+        # check if the x coordinates are far enough
+        for i in range(len(self._dummy_positions)):
+            abs_x = abs(self._dummy_positions[i] - x)
+            if abs_x <= 1:
+                return False
+        return True
 
     # returns path and len of the path
     def bfs(self, start, goal):

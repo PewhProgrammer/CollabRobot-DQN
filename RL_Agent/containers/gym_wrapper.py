@@ -52,7 +52,9 @@ class CustomEnv(gym.Env):
         agent = self.env.robots[0]
 
         self.env.move_robots(action, 0)
-        self.env.move_objectives(0)
+        if action != 4:
+            self.env.move_objectives(0)
+
         self.env.update_grid()
         reward, done = self.env.reward_manager.observe(self.env, agent,
                                                        action)  # check if pickup and dropoff is successful

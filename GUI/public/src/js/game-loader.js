@@ -75,6 +75,7 @@ function setup() {
             data.push(payload);
           } else {
             completion_rate = payload.completion;
+            collided_rate = payload.collided;
             sensor = payload.sensor_information
             dueling_dqn = payload.dueling
             double_dqn = payload["double-dqn"]
@@ -183,6 +184,7 @@ function reset_game() {
   dropoffs = [];
   data = [];
   completion_rate = 0
+  collided_rate = 0
   sensor = false
   double_dqn = false
   dueling_dqn = false
@@ -260,6 +262,9 @@ function init_new_grid(board) {
   var x = document.getElementsByClassName("completion")[0];
   x.innerHTML = `Completion Rate: ${Math.round(completion_rate * 100) / 100}`;
 
+  var x = document.getElementsByClassName("collided")[0];
+  x.innerHTML = `Collision Rate: ${Math.round(collided_rate * 100) / 100}`;
+
   var x = document.getElementsByClassName("sensor")[0];
   x.innerHTML = `Sensor Information: ${sensor}`;
 
@@ -275,8 +280,14 @@ function init_new_grid(board) {
 function create_objectives(board) {
   pickups = [];
   dropoffs = [];
-  dropoffs.push(fill_objective(board.dropoff, "#c3bcc3", "DZONE", adjustedX));
-  pickups.push(fill_objective(board.pickup, "#CC6600", "P", adjustedX));
+  let amount_objectives = board.dropoff.length / 2
+  while(amount_objectives > 0){
+    const _idx$ = amount_objectives * 2
+
+    dropoffs.push(fill_objective(board.dropoff.slice(_idx$ - 2, _idx$), "#c3bcc3", "DZONE", adjustedX));
+    pickups.push(fill_objective(board.pickup.slice(_idx$ - 2, _idx$), "#CC6600", "P", adjustedX));
+    amount_objectives--;
+  }
 }
 
 function fill_objective(pos, fill, letter, size) {

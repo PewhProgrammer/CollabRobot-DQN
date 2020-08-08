@@ -16,6 +16,7 @@ class Objective_Manager(object):
     def __init__(self, obj_dict={}):
         self._objectives_dict = obj_dict
         self._robot_objectives_dict = {}
+        self.reached_target = False
 
     def perform_action(self, robot, grid):
         # is used in robots method move()
@@ -47,7 +48,9 @@ class Objective_Manager(object):
         objective.set_position(newPos)
         return True
 
-    def check_grasping_objective(self, robot):
+    def check_grasping_objective(self, robot, grasp_action=True):
+        # boolean return type actually does not contribute to anything
+        # important are the assignments to the dict
         rY, rX = robot.get_position()
         obj = self._objectives_dict[0]  # always take the first pickup
         pY, pX = obj.get_pickup_pos()
@@ -59,14 +62,16 @@ class Objective_Manager(object):
         if det == 1:
             # TODO: check from which position
             if robot.get_id() in self._robot_objectives_dict:
-                return True
+                return True, "already grasping"
             if len(self._robot_objectives_dict) >= w:
                 # too many agents already grasping
-                return False
-            self._robot_objectives_dict[robot.get_id()] = 0
-            return True
+                return False, "agents surpasses objective weight"
+            if grasp_action:
+                self._robot_objectives_dict[robot.get_id()] = 0
+            return True, "agent added to dict"
 
-        return False
+        self._robot_objectives_dict.pop(robot.id, None)  # degrasping
+        return False, "agent degrasped"
 
     def is_grasping_objective(self, robot):
         return robot.get_id() in self._robot_objectives_dict
@@ -133,10 +138,16 @@ class Objective_Manager(object):
         objective = self.get_objectives()[objective_id]
         return objective.delivery_reward()
 
+    def set_reached_target(self):
+        self.reached_target = True
+
     def has_pickup(self, agentID):
         return agentID in self._robot_objectives_dict.keys()
 
-    def is_done(self):
+    def is_done(self, mode=1):
+        if mode == 6:
+            return self.reached_target
+
         done = True
         for obj in self._objectives_dict.values():
             done = done and obj.is_delivered()

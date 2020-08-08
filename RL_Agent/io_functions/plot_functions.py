@@ -142,6 +142,10 @@ def convert_completionRate_to_file(PATH, data_id="completion"):
         full = file.split('-')
         del full[-1]
         category = '-'.join(full)
+        if len(full) == 1:
+            category = full[0].split('_')[2]
+        else:
+            category = full[1]
         with open(PATH + file) as f:
             for line in f:
                 data = json.loads(line)
@@ -205,9 +209,12 @@ def extract_average_steps(PATH):
 
     print("optimal steps overall: {0}  steps overall: {1}".format(min_s_overall, steps_overall))
     print("Average deficit percentage in completed episodes {}".format(deficit / 150))
-    print("Average optimal steps {0} Average performed steps {2} Average surpass steps {1}".format(min_s_overall / 150, (steps_overall / 150) - (min_s_overall / 150),
+    print("Average optimal steps {0} Average performed steps {2} Average surpass steps {1}".format(min_s_overall / 150,
+                                                                                                   (
+                                                                                                               steps_overall / 150) - (
+                                                                                                               min_s_overall / 150),
                                                                                                    steps_overall / 150))
-    plt.plot(y_axis,min_steps_list, label='optimal steps')
+    plt.plot(y_axis, min_steps_list, label='optimal steps')
     plt.plot(y_axis, steps_p_list, label="performed steps")
 
     plt.legend()
@@ -224,9 +231,15 @@ def extract_average_steps(PATH):
 
     plt.show()
 
+
 if __name__ == "__main__":
     # reward_functions_plot_swarm("../data/session_02.06/time-2230.log")
     # average_plot("E:/concept-1/final/")
     # bar_chart("")
-    # convert_completionRate_to_file("E:/concept-1/final/")
-    extract_average_steps("../study/algorithm_test/concept-3/small_room/game_logs/session_28.07/allocation_test-v3.log")
+    convert_completionRate_to_file(
+        "F:/Repositories/FedSwarm/RL_Agent/study/algorithm_test/concept-2/small_room/game_logs/without_wall_pickup_in_sensor/dummies_1/",
+    "completion")
+    convert_completionRate_to_file(
+        "F:/Repositories/FedSwarm/RL_Agent/study/algorithm_test/concept-2/small_room/game_logs/without_wall_pickup_in_sensor/dummies_1/",
+    "collided")
+    # extract_average_steps("../study/algorithm_test/concept-3/small_room/game_logs/session_28.07/allocation_test-v3.log")

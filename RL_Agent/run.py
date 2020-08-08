@@ -183,19 +183,44 @@ def run_hyperparameter_test(cfg, cfg_test, interval, runs, parameter, parameter_
 
 
 def run_dynamic_hindrances(cfg, cfg_test, runs=20):
+
+    change_config(cfg, cfg_test, "dummies", 1)
+
+    # agents = 1
+    for j in range(10):
+        pun = round((j * 5), 1) * -1
+        for i in range(runs):
+            run_config(cfg, cfg_test
+                       , "reward_conf", [1, 25, 10, 2000, pun, 0], "dummies1_punish_" + str(pun), i)
+
+    change_config(cfg, cfg_test, "dummies", 2)
+
+    # agents = 1
+    for j in range(10):
+        pun = round((j * 5), 1) * -1
+        for i in range(runs):
+            run_config(cfg, cfg_test
+                       , "reward_conf", [1, 25, 10, 2000, pun, 0], "dummies2_punish_" + str(pun), i)
+
+    change_config(cfg, cfg_test, "dummies", 4)
+
+    # agents = 1
+    for j in range(10):
+        pun = round((j * 5), 1) * -1
+        for i in range(runs):
+            run_config(cfg, cfg_test
+                       , "reward_conf", [1, 25, 10, 2000, pun, 0], "dummies4_punish_" + str(pun), i)
+
+    # # change to sensorON
+    #
+    # change_config(cfg, cfg_test, "dummies", 4)
+    #
+    # # agents = 4
     # for j in range(10):
-    #     pun = round((j + 1) * 0.1, 1)
+    #     pun = round(((j+1) * 5), 1) * -1
     #     for i in range(runs):
     #         run_config(cfg, cfg_test
-    #                    , "reward_conf", [1, 10, 10, 2000, pun, 0], "experiment_nosensor_punish_-" + str(pun), i)
-
-    # change to sensorON
-
-    change_config(cfg, cfg_test, "sensor_information", True)
-
-    for i in range(runs):
-        run_config(cfg, cfg_test
-                   , "reward_conf", [1, 35, 1, 200, -15, 0], "experiment_", i)
+    #                    , "reward_conf", [1, 25, 10, 2000, pun, 0], "dummies4_punish_" + str(pun), i)
 
 
 def train_single(cfg, version, load_model=None):
@@ -205,8 +230,8 @@ def train_single(cfg, version, load_model=None):
                     double_q=cfg["double-dqn"],
                     prioritized_replay=cfg["prioritized"],
                     policy_kwargs=dict(dueling=cfg["dueling"]),
-                    exploration_fraction=cfg["exploration_frac"],
-                    tensorboard_log=cfg["study_results"] + "tensorboard/experiments/")
+                    exploration_fraction=cfg["exploration_frac"])
+                    # tensorboard_log=cfg["study_results"] + "tensorboard/experiments/")
     else:
         model = DQN.load("{}models/single_dqn_transport".format(cfg["study_results"]), env=gym_wrapper)
 
@@ -251,7 +276,8 @@ def test_phase(config_name, version, trained_model=None, multi=False, double_age
     else:
         gym_wrapper = CustomEnv(config_name)
 
-    model = DQN.load("{0}models/{2}-v{1}".format(config_name["study_results"], version, config_name["experiment_name"]),
+    # TODO change 0 to version
+    model = DQN.load("{0}models/{2}-v{1}".format(config_name["study_results"], 0, config_name["experiment_name"]),
                      env=gym_wrapper)
 
     step = 0
@@ -261,7 +287,6 @@ def test_phase(config_name, version, trained_model=None, multi=False, double_age
     collided = 0
     min_steps_needed = 0
     steps_performed = 0
-
 
     logger.create_new_handler(config_name["study_results"], config_name["experiment_name"], version)
     logger.save_init(gym_wrapper.get_env())
@@ -280,14 +305,15 @@ def test_phase(config_name, version, trained_model=None, multi=False, double_age
         if done:
             env = gym_wrapper.get_env()
             print("[E-{}] Accumulated rewards: {}".format(episode, acc_rewards))
-            finished = env.objective_manager.is_done()
+            finished = env.objective_manager.is_done(mode=config_name["id"])
 
-            logger.save_end(env, acc_rewards, finished, env.min_steps_to_completion, max(env.agents_moved_count,env.min_steps_to_completion))
+            logger.save_end(env, acc_rewards, finished, env.min_steps_to_completion,
+                            max(env.agents_moved_count, env.min_steps_to_completion))
             ep_stats[episode] = (acc_rewards, finished, env.min_steps_to_completion, env.agents_moved_count)
             if finished:
                 completed += 1
-                if env.get_agent().is_collided():
-                    collided += 1
+            if env.get_agent().is_collided():
+                collided += 1
 
             min_steps_needed += env.min_steps_to_completion
             steps_performed += env.agents_moved_count
@@ -306,7 +332,7 @@ def test_phase(config_name, version, trained_model=None, multi=False, double_age
     config_name["completion"] = completed / episode
     config_name["collided"] = collided / episode
     if config_name["distance_information"]:
-        print("Minimum steps: {0}  Performed steps: {1}".format(min_steps_needed , steps_performed))
+        print("Minimum steps: {0}  Performed steps: {1}".format(min_steps_needed, steps_performed))
         config_name["steps_surplus_rate"] = steps_performed / min_steps_needed
     logger.log_json(config_name)
 
@@ -339,7 +365,7 @@ def run_config(cfg, cfg_test, key, value, name, version, mode="single", model_na
         train_multiple(cfg, version, model_name, double_agent=True)
         return test_phase(cfg_test, version=version, trained_model=model_name, multi=True, double_agent=True)
     else:
-        train_single(cfg, version)
+        # train_single(cfg, version)
         return test_phase(cfg_test, version)
 
 
@@ -366,8 +392,8 @@ if __name__ == '__main__':
     # run_reward_function(config.wide_room_single, config.wide_room_single_test, runs=20)
     # run_sensor(config.wide_room_single, config.wide_room_single_test, runs=1)
 
-    # run_dynamic_hindrances(config.small_room_single, config.small_room_single_test, runs=1)
-    run_dynamic_hindrances(config.obstacle_lane, config.obstacle_lane_test, runs=1)
+    run_dynamic_hindrances(config.small_room_single, config.small_room_single_test, runs=20)
+    # run_dynamic_hindrances(config.obstacle_lane, config.obstacle_lane_test, runs=1)
     # run_task_allocation(config.small_room_single, config.small_room_single_test, runs=1)
     # run_collaboration(config.small_room_single, config.small_room_single_test, runs=2)
 
