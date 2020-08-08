@@ -15,3 +15,6 @@ Execute this command to run the application
 ``npm start``
 
 The application runs on localhost:3000.
+
+![Alt text](img/gui_environment_croped.png?raw=true "Title")
+![Alt text](img/gui_statistics_croped.png?raw=true "Title")
