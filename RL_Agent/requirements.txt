@@ -13,7 +13,7 @@ cloudpickle==1.2.2
 colorama==0.4.3
 cycler==0.10.0
 decorator==4.4.1
-Django==3.0.5
+Django==3.1.9
 dnspython==1.16.0
 eventlet==0.25.1
 future==0.18.2
