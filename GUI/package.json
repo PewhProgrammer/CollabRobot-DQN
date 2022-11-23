@@ -26,6 +26,6 @@
     "line-navigator": "^2.1.6",
     "p5": "^0.10.2",
     "prettier": "^1.19.1",
-    "socket.io": "^2.3.0"
+    "socket.io": "^2.5.0"
   }
 }
